@@ -20,6 +20,8 @@
   let session = null;
   let editingNoteId = null;
   let cachedNotes = [];
+  let editingPostId = null;
+  let cachedPosts = [];
 
   function setLoginStatus(text, kind = '') {
     loginStatus.textContent = text;
@@ -125,7 +127,7 @@
     dashboardView.hidden = false;
     if (sessionUid) sessionUid.textContent = session?.user?.id ? `${session.user.id.slice(0, 8)}…` : '-';
     setGlobalStatus('AUTH OK / ADMIN OK / MEMORY ONLY');
-    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls()]);
+    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts()]);
   }
 
   async function handleLogin() {
@@ -406,6 +408,114 @@
     await loadControls();
   }
 
+
+  async function loadPosts() {
+    const response = await api('/rest/v1/gang_posts?select=id,title,body,published,pinned,created_at,updated_at,published_at&order=pinned.desc,published_at.desc.nullslast,created_at.desc');
+    if (!response.ok) throw new Error(`HTTP_${response.status}`);
+    cachedPosts = await response.json();
+    renderPosts();
+  }
+
+  function renderPosts() {
+    const list = $('postsList');
+    if (!list) return;
+    list.replaceChildren();
+    if (!cachedPosts.length) {
+      list.append(Object.assign(document.createElement('div'), { className: 'empty', textContent: 'nera postu. ramu.' }));
+      return;
+    }
+    cachedPosts.forEach((post) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = `note-row post-row${editingPostId === post.id ? ' active' : ''}`;
+      const title = document.createElement('b');
+      title.textContent = `${post.pinned ? '📌 ' : ''}${post.title}`;
+      const meta = document.createElement('small');
+      meta.textContent = `${post.published ? 'VIESAS' : 'JUODRASTIS'} · ${formatDate(post.published_at || post.updated_at)}`;
+      row.append(title, meta);
+      row.addEventListener('click', () => openPost(post.id));
+      list.append(row);
+    });
+  }
+
+  function newPost() {
+    editingPostId = null;
+    $('postTitle').value = '';
+    $('postBody').value = '';
+    $('postPublished').checked = false;
+    $('postPinned').checked = false;
+    $('deletePostBtn').disabled = true;
+    $('postState').textContent = 'NAUJAS POSTAS / JUODRASTIS';
+    renderPosts();
+    $('postTitle').focus();
+  }
+
+  function openPost(id) {
+    const post = cachedPosts.find((item) => item.id === id);
+    if (!post) return;
+    editingPostId = post.id;
+    $('postTitle').value = post.title;
+    $('postBody').value = post.body || '';
+    $('postPublished').checked = Boolean(post.published);
+    $('postPinned').checked = Boolean(post.pinned);
+    $('deletePostBtn').disabled = false;
+    $('postState').textContent = `${post.published ? 'PUBLIKUOTAS' : 'JUODRASTIS'} · ${String(post.id).slice(0, 8)}…`;
+    renderPosts();
+  }
+
+  async function savePost() {
+    const title = $('postTitle').value.trim();
+    const body = $('postBody').value;
+    const published = $('postPublished').checked;
+    const pinned = $('postPinned').checked;
+    if (!title) {
+      $('postState').textContent = 'REIKIA PAVADINIMO';
+      return;
+    }
+
+    const current = cachedPosts.find((item) => item.id === editingPostId);
+    const now = new Date().toISOString();
+    const payload = {
+      title,
+      body,
+      published,
+      pinned,
+      updated_at: now,
+      published_at: published ? (current?.published_at || now) : null,
+    };
+
+    $('postState').textContent = published ? 'PUBLIKUOJAMA...' : 'SAUGOMAS JUODRASTIS...';
+    const response = editingPostId
+      ? await api(`/rest/v1/gang_posts?id=eq.${encodeURIComponent(editingPostId)}`, {
+          method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(payload),
+        })
+      : await api('/rest/v1/gang_posts', {
+          method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(payload),
+        });
+
+    if (!response.ok) {
+      if (session) $('postState').textContent = `NEISSISAUGOJO (${response.status})`;
+      return;
+    }
+    const data = await response.json().catch(() => []);
+    if (!editingPostId && data[0]?.id) editingPostId = data[0].id;
+    $('postState').textContent = published ? 'PUBLIKUOTA. REFRESHINK PAGRINDINI.' : 'JUODRASTIS ISSAUGOTAS.';
+    await loadPosts();
+  }
+
+  async function deletePost() {
+    if (!editingPostId || !confirm('Tikrai trint sita posta?')) return;
+    const response = await api(`/rest/v1/gang_posts?id=eq.${encodeURIComponent(editingPostId)}`, {
+      method: 'DELETE', headers: { Prefer: 'return=minimal' },
+    });
+    if (!response.ok) {
+      if (session) $('postState').textContent = 'TRINT NEPAVYKO';
+      return;
+    }
+    newPost();
+    await loadPosts();
+  }
+
   function setTab(name) {
     document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === name));
     document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.toggle('active', panel.id === `tab-${name}`));
@@ -421,6 +531,10 @@
   $('deleteNoteBtn')?.addEventListener('click', deleteNote);
   $('refreshControls')?.addEventListener('click', loadControls);
   $('saveControlBtn')?.addEventListener('click', saveControl);
+  $('refreshPosts')?.addEventListener('click', loadPosts);
+  $('newPostBtn')?.addEventListener('click', newPost);
+  $('savePostBtn')?.addEventListener('click', savePost);
+  $('deletePostBtn')?.addEventListener('click', deletePost);
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
 
   setInterval(() => {

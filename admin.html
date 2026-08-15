@@ -51,6 +51,7 @@
         <button class="tab active" data-tab="complaints">SKUNDAI</button>
         <button class="tab" data-tab="notes">UZRASAI</button>
         <button class="tab" data-tab="controls">VALDYMAS</button>
+        <button class="tab" data-tab="posts">POSTAI</button>
         <button class="tab" data-tab="session">SESIJA</button>
       </nav>
 
@@ -91,6 +92,32 @@
         <div id="controlsList" class="card-list"><div class="empty">nera valdymo raktu</div></div>
       </section>
 
+      <section class="tab-panel" id="tab-posts">
+        <div class="panel-title"><b>VIESU_POSTU_TRANSMISIJA.db</b><button id="newPostBtn" class="small-btn">NAUJAS</button></div>
+        <div class="post-admin-layout">
+          <div>
+            <div class="post-admin-toolbar">
+              <span class="dim">CIA JAU TIESIAI I PUSLAPI</span>
+              <button id="refreshPosts" class="small-btn">ATNAUJINT</button>
+            </div>
+            <div id="postsList" class="side-list post-list"><div class="empty">nera postu</div></div>
+          </div>
+          <div class="editor post-editor">
+            <input id="postTitle" maxlength="160" placeholder="posto pavadinimas" />
+            <textarea id="postBody" maxlength="20000" placeholder="rasai nesamone ir ji atsiranda pagrindiniam puslapy"></textarea>
+            <div class="post-flags">
+              <label><input id="postPublished" type="checkbox" /> PUBLIKUOTAS</label>
+              <label><input id="postPinned" type="checkbox" /> PRISEGTAS VIRSUJ</label>
+            </div>
+            <div class="editor-actions">
+              <button id="savePostBtn" class="main-btn">ISSAUGOT POSTA</button>
+              <button id="deletePostBtn" class="small-btn danger" disabled>TRINT</button>
+            </div>
+            <div class="tiny" id="postState">NAUJAS POSTAS / JUODRASTIS</div>
+          </div>
+        </div>
+      </section>
+
       <section class="tab-panel" id="tab-session">
         <div class="panel-title"><b>SESIJOS_DIAGNOSTIKA.txt</b></div>
         <div class="session-grid">
@@ -110,6 +137,6 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260815b"></script>
+  <script src="admin.js?v=20260816a"></script>
 </body>
 </html>

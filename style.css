@@ -126,3 +126,12 @@ body.alert-mode { animation: microshake .12s linear 6; }
   .language-box { width: 100%; order: 5; }
   .status { margin-left: 0; }
 }
+
+
+/* LIVE_ADMIN_POSTS */
+.live-posts { display: grid; gap: 10px; margin-bottom: 10px; }
+.live-post { border-left: 3px solid rgba(255,255,255,.35); }
+.live-post-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+.live-post-head b { overflow-wrap: anywhere; }
+.live-post-head .stamp { flex: 0 0 auto; }
+.live-post-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.45; }
