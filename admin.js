@@ -442,10 +442,10 @@
     editingPostId = null;
     $('postTitle').value = '';
     $('postBody').value = '';
-    $('postPublished').checked = false;
     $('postPinned').checked = false;
     $('deletePostBtn').disabled = true;
-    $('postState').textContent = 'NAUJAS POSTAS / JUODRASTIS';
+    $('unpublishPostBtn').disabled = true;
+    $('postState').textContent = 'NAUJAS POSTAS / DAR NEVIESAS';
     renderPosts();
     $('postTitle').focus();
   }
@@ -456,24 +456,24 @@
     editingPostId = post.id;
     $('postTitle').value = post.title;
     $('postBody').value = post.body || '';
-    $('postPublished').checked = Boolean(post.published);
     $('postPinned').checked = Boolean(post.pinned);
     $('deletePostBtn').disabled = false;
+    $('unpublishPostBtn').disabled = !post.published;
     $('postState').textContent = `${post.published ? 'PUBLIKUOTAS' : 'JUODRASTIS'} · ${String(post.id).slice(0, 8)}…`;
     renderPosts();
   }
 
-  async function savePost() {
+  async function persistPost(forcePublished = null) {
     const title = $('postTitle').value.trim();
     const body = $('postBody').value;
-    const published = $('postPublished').checked;
     const pinned = $('postPinned').checked;
     if (!title) {
       $('postState').textContent = 'REIKIA PAVADINIMO';
-      return;
+      return false;
     }
 
     const current = cachedPosts.find((item) => item.id === editingPostId);
+    const published = forcePublished === null ? Boolean(current?.published) : Boolean(forcePublished);
     const now = new Date().toISOString();
     const payload = {
       title,
@@ -484,7 +484,7 @@
       published_at: published ? (current?.published_at || now) : null,
     };
 
-    $('postState').textContent = published ? 'PUBLIKUOJAMA...' : 'SAUGOMAS JUODRASTIS...';
+    $('postState').textContent = published ? 'SIUNCIAMA I PUSLAPI...' : 'SAUGOMA NEVIESAI...';
     const response = editingPostId
       ? await api(`/rest/v1/gang_posts?id=eq.${encodeURIComponent(editingPostId)}`, {
           method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(payload),
@@ -495,12 +495,30 @@
 
     if (!response.ok) {
       if (session) $('postState').textContent = `NEISSISAUGOJO (${response.status})`;
-      return;
+      return false;
     }
+
     const data = await response.json().catch(() => []);
     if (!editingPostId && data[0]?.id) editingPostId = data[0].id;
-    $('postState').textContent = published ? 'PUBLIKUOTA. REFRESHINK PAGRINDINI.' : 'JUODRASTIS ISSAUGOTAS.';
+    $('postState').textContent = published ? 'VIESAS. JAU TURETU BUT PUSLAPY.' : 'ISSAUGOTA KAIP JUODRASTIS.';
     await loadPosts();
+    const refreshed = cachedPosts.find((item) => item.id === editingPostId);
+    $('unpublishPostBtn').disabled = !refreshed?.published;
+    $('deletePostBtn').disabled = !editingPostId;
+    return true;
+  }
+
+  async function savePost() {
+    await persistPost(null);
+  }
+
+  async function publishPost() {
+    await persistPost(true);
+  }
+
+  async function unpublishPost() {
+    if (!editingPostId) return;
+    await persistPost(false);
   }
 
   async function deletePost() {
@@ -534,6 +552,8 @@
   $('refreshPosts')?.addEventListener('click', loadPosts);
   $('newPostBtn')?.addEventListener('click', newPost);
   $('savePostBtn')?.addEventListener('click', savePost);
+  $('publishPostBtn')?.addEventListener('click', publishPost);
+  $('unpublishPostBtn')?.addEventListener('click', unpublishPost);
   $('deletePostBtn')?.addEventListener('click', deletePost);
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
 
