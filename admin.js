@@ -148,7 +148,7 @@
     dashboardView.hidden = false;
     if (sessionUid) sessionUid.textContent = session?.user?.id ? `${session.user.id.slice(0, 8)}…` : '-';
     setGlobalStatus('AUTH OK / ADMIN OK / MEMORY ONLY');
-    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts(), loadArchives()]);
+    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts(), loadArchives(), loadPollAdmin()]);
   }
 
   async function handleLogin() {
@@ -820,6 +820,161 @@
   $('archiveSummary')?.addEventListener('input', commitArchiveLanguage);
   $('archiveBody')?.addEventListener('input', commitArchiveLanguage);
 
+
+  let adminPollData = null;
+
+  async function pollRpc(name, payload = {}) {
+    const response = await api(`/rest/v1/rpc/${name}`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(data?.message || data?.code || `HTTP_${response.status}`);
+    return data;
+  }
+
+  function renderPollAdminOptions(labels = []) {
+    const root = $('pollAdminOptions');
+    if (!root) return;
+    root.replaceChildren();
+    labels.forEach((label, index) => {
+      const row = document.createElement('div');
+      row.className = 'poll-admin-option-row';
+      const input = document.createElement('input');
+      input.maxLength = 160;
+      input.value = label || '';
+      input.placeholder = `atsakymas ${index + 1}`;
+      input.dataset.pollOption = '1';
+      const remove = button('TRINT', 'small-btn danger', () => {
+        if (root.querySelectorAll('[data-poll-option]').length <= 2) {
+          $('pollAdminState').textContent = 'REIKIA BENT 2 ATSAKYMU';
+          return;
+        }
+        row.remove();
+        renumberPollAdminOptions();
+      });
+      row.append(input, remove);
+      root.append(row);
+    });
+  }
+
+  function renumberPollAdminOptions() {
+    document.querySelectorAll('#pollAdminOptions [data-poll-option]').forEach((input, index) => {
+      input.placeholder = `atsakymas ${index + 1}`;
+    });
+  }
+
+  function addPollAdminOption() {
+    const root = $('pollAdminOptions');
+    const values = [...root.querySelectorAll('[data-poll-option]')].map((input) => input.value);
+    if (values.length >= 8) {
+      $('pollAdminState').textContent = '8 ATSAKYMU UZTENKA. CIA NE EGZAMINAS.';
+      return;
+    }
+    values.push('');
+    renderPollAdminOptions(values);
+    root.querySelector('[data-poll-option]:last-of-type')?.focus?.();
+  }
+
+  function pollAdminValues() {
+    return [...document.querySelectorAll('#pollAdminOptions [data-poll-option]')]
+      .map((input) => input.value.trim())
+      .filter(Boolean);
+  }
+
+  function renderPollAdminPreview(data) {
+    const root = $('pollAdminPreview');
+    if (!root) return;
+    root.replaceChildren();
+    const total = Math.max(0, Number(data?.total || 0));
+    (data?.options || []).forEach((option) => {
+      const row = document.createElement('div');
+      row.className = 'poll-admin-result-row';
+      const votes = Number(option.votes || 0);
+      const pct = total ? Math.round(votes / total * 100) : 0;
+      const line = document.createElement('div');
+      line.className = 'poll-admin-result-line';
+      const label = document.createElement('span');
+      label.textContent = option.label;
+      const count = document.createElement('b');
+      count.textContent = `${votes} · ${pct}%`;
+      line.append(label, count);
+      const meter = document.createElement('div');
+      meter.className = 'poll-admin-meter';
+      const fill = document.createElement('span');
+      fill.style.width = `${pct}%`;
+      meter.append(fill);
+      row.append(line, meter);
+      root.append(row);
+    });
+  }
+
+  function applyPollAdminData(data) {
+    adminPollData = data;
+    if (!data?.exists) {
+      $('pollAdminQuestion').value = '';
+      renderPollAdminOptions(['', '']);
+      $('pollAdminOpen').checked = true;
+      $('pollAdminTotal').textContent = '0';
+      $('pollAdminStatus').textContent = 'NERA';
+      $('pollAdminVersion').textContent = '-';
+      renderPollAdminPreview({ options: [], total: 0 });
+      return;
+    }
+    $('pollAdminQuestion').value = data.question || '';
+    renderPollAdminOptions((data.options || []).map((option) => option.label));
+    $('pollAdminOpen').checked = Boolean(data.open);
+    $('pollAdminTotal').textContent = String(data.total || 0);
+    $('pollAdminStatus').textContent = data.open ? 'ATIDARYTA' : 'UZDARYTA';
+    $('pollAdminVersion').textContent = String(data.version || '-').slice(0, 8) + '…';
+    renderPollAdminPreview(data);
+  }
+
+  async function loadPollAdmin() {
+    if (!$('pollAdminQuestion') || !session) return;
+    $('pollAdminState').textContent = 'KRAUNAMA APKLAUSA...';
+    try {
+      const data = await pollRpc('gang_poll_results');
+      applyPollAdminData(data);
+      $('pollAdminState').textContent = 'APKLAUSA UZKRAUTA';
+    } catch (error) {
+      if (!session) return;
+      $('pollAdminState').textContent = `APKLAUSA NEUZSIKROVE (${error.message})`;
+    }
+  }
+
+  async function savePollAdmin(reset = false) {
+    const question = $('pollAdminQuestion').value.trim();
+    const options = pollAdminValues();
+    if (!question) {
+      $('pollAdminState').textContent = 'REIKIA KLAUSIMO';
+      return;
+    }
+    if (options.length < 2 || options.length > 8) {
+      $('pollAdminState').textContent = 'REIKIA 2-8 NORMALIU ATSAKYMU';
+      return;
+    }
+    if (reset && !confirm('Tikrai nunulint visus dabartinius balsus?')) return;
+
+    $('pollAdminState').textContent = reset ? 'NAIKINAMI BALSAI...' : 'SAUGOMA DEMOKRATIJA...';
+    try {
+      const data = await pollRpc('gang_admin_set_poll', {
+        p_question: question,
+        p_options: options,
+        p_is_open: $('pollAdminOpen').checked,
+        p_reset: reset,
+      });
+      applyPollAdminData(data);
+      $('pollAdminState').textContent = reset
+        ? 'BALSAI NUNULINTI. TAUTA PAMIRSO.'
+        : 'APKLAUSA ISSAUGOTA. PAKEITUS TEKSTA BALSAI NUSINULINA AUTOMATISKAI.';
+      setGlobalStatus('APKLAUSA ATNAUJINTA');
+    } catch (error) {
+      if (!session) return;
+      $('pollAdminState').textContent = `APKLAUSA NEISSISAUGOJO (${error.message})`;
+    }
+  }
+
   function setTab(name) {
     document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === name));
     document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.toggle('active', panel.id === `tab-${name}`));
@@ -847,6 +1002,10 @@
   $('publishArchiveBtn')?.addEventListener('click', () => saveArchive(true));
   $('unpublishArchiveBtn')?.addEventListener('click', unpublishArchive);
   $('deleteArchiveBtn')?.addEventListener('click', deleteArchive);
+  $('refreshPoll')?.addEventListener('click', loadPollAdmin);
+  $('pollAddOption')?.addEventListener('click', addPollAdminOption);
+  $('savePollBtn')?.addEventListener('click', () => savePollAdmin(false));
+  $('resetPollBtn')?.addEventListener('click', () => savePollAdmin(true));
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
 
   setInterval(() => {

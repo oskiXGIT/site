@@ -53,6 +53,7 @@
         <button class="tab" data-tab="controls">VALDYMAS</button>
         <button class="tab" data-tab="posts">POSTAI</button>
         <button class="tab" data-tab="archives">ARCHYVAI</button>
+        <button class="tab" data-tab="poll">APKLAUSA</button>
         <button class="tab" data-tab="session">SESIJA</button>
       </nav>
 
@@ -193,6 +194,30 @@
         </div>
       </section>
 
+
+      <section class="tab-panel" id="tab-poll">
+        <div class="panel-title"><b>VIESOS_NUOMONES_VALDYMAS.db</b><button id="refreshPoll" class="small-btn">ATNAUJINT</button></div>
+        <p class="dim">viena gyva apklausa. pakeitus klausima arba atsakymus seni balsai automatiskai nunulinami.</p>
+        <div class="editor poll-admin-editor">
+          <label>KLAUSIMAS</label>
+          <input id="pollAdminQuestion" maxlength="300" placeholder="pvz. kas vel pajudino konteineri?" />
+          <div class="poll-admin-head"><span>ATSAKYMAI (2-8)</span><button id="pollAddOption" class="small-btn" type="button">+ ATSAKYMAS</button></div>
+          <div id="pollAdminOptions" class="poll-admin-options"></div>
+          <label class="archive-check"><input id="pollAdminOpen" type="checkbox" /> PRIIMTI NAUJUS BALSUS</label>
+          <div class="poll-admin-stats">
+            <div><span>BALSU</span><b id="pollAdminTotal">0</b></div>
+            <div><span>BUSENA</span><b id="pollAdminStatus">-</b></div>
+            <div><span>VERSIJA</span><b id="pollAdminVersion">-</b></div>
+          </div>
+          <div id="pollAdminPreview" class="poll-admin-preview"></div>
+          <div class="editor-actions">
+            <button id="savePollBtn" class="main-btn" type="button">ISSAUGOT APKLAUSA</button>
+            <button id="resetPollBtn" class="small-btn danger" type="button">NUNULINT BALSUS</button>
+          </div>
+          <div class="tiny" id="pollAdminState">LAUKIA DEMOKRATIJOS</div>
+        </div>
+      </section>
+
       <section class="tab-panel" id="tab-session">
         <div class="panel-title"><b>SESIJOS_DIAGNOSTIKA.txt</b></div>
         <div class="session-grid">
@@ -212,6 +237,6 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260816e"></script>
+  <script src="admin.js?v=20260816f"></script>
 </body>
 </html>

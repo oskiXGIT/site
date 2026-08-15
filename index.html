@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="ads.css?v=20260815e" />
   <link rel="stylesheet" href="language-ui.css?v=20260815g" />
   <link rel="stylesheet" href="gang.css?v=20260815h" />
+  <link rel="stylesheet" href="poll.css?v=20260816a" />
 </head>
 <body>
   <video class="bg-video" autoplay muted loop playsinline>
@@ -24,6 +25,7 @@
       <nav class="nav" aria-label="Pagrindinė navigacija">
         <button class="nav-btn active" data-panel="home" data-i18n="nav.home">PAGRINDINIS</button>
         <button class="nav-btn" data-panel="posts">POSTAI</button>
+        <button class="nav-btn" id="pollNav" data-panel="poll">BALSAVIMAS</button>
         <button class="nav-btn" data-panel="archive" data-i18n="nav.archive">ARCHYVAS</button>
         <button class="nav-btn" data-panel="files" data-i18n="nav.files">BYLOS</button>
         <button class="nav-btn" data-panel="terminal" data-i18n="nav.terminal">TERMINALAS</button>
@@ -92,6 +94,26 @@
             <div id="allPosts" class="public-post-archive">
               <div class="thread-box compact">kraunama is kazkur...</div>
             </div>
+          </div>
+        </div>
+
+
+        <div class="window panel-view" id="poll">
+          <div class="window-title"><span>VIESA_NUOMONE.db</span><span class="poll-live-badge" id="pollLiveBadge">LIVE</span></div>
+          <div class="window-body">
+            <div class="poll-headline">
+              <div>
+                <div class="poll-kicker">VIENAS KLAUSIMAS / VIENAS BALSAS / JOKIU GARANTIJU</div>
+                <div class="poll-question" id="pollQuestion">kraunama...</div>
+              </div>
+            </div>
+            <div class="poll-options" id="pollOptions"></div>
+            <div class="poll-bottom">
+              <button class="classified-btn poll-vote-btn" id="pollVoteBtn" type="button" disabled>BALSUOT</button>
+              <div class="poll-status" id="pollStatus">KRAUNAMA DEMOKRATIJA...</div>
+              <div class="poll-total-box"><span id="pollTotalLabel">BALSU IS VISO</span><b id="pollTotal">0</b></div>
+            </div>
+            <div class="poll-privacy" id="pollPrivacy">ANONIMINE APKLAUSA.</div>
           </div>
         </div>
 
@@ -190,6 +212,7 @@
   <script src="gang.js?v=20260815h"></script>
   <script src="ads.js?v=20260815e"></script>
   <script src="posts.js?v=20260816d"></script>
+  <script src="poll.js?v=20260816a"></script>
   <script src="archives.js?v=20260816b"></script>
 </body>
 </html>
