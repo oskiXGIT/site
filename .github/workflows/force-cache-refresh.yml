@@ -1,0 +1,50 @@
+name: force-cache-refresh
+
+on:
+  push:
+    paths:
+      - '.github/workflows/force-cache-refresh.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch cache controls and asset versions
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          BUILD = '20260816_0234'
+          META = '''  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />\n  <meta http-equiv="Pragma" content="no-cache" />\n  <meta http-equiv="Expires" content="0" />\n'''
+
+          for filename in ('index.html', 'admin.html'):
+              path = Path(filename)
+              text = path.read_text(encoding='utf-8')
+
+              if 'http-equiv="Cache-Control"' not in text:
+                  marker = '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n'
+                  text = text.replace(marker, marker + META, 1)
+
+              if 'cache-bust.js' not in text:
+                  text = text.replace('</head>', f'  <script src="cache-bust.js?v={BUILD}"></script>\n</head>', 1)
+
+              pattern = re.compile(r'(?P<file>[A-Za-z0-9._-]+\.(?:css|js|png|mp4))(?:\?v=[^"\']*)?')
+              text = pattern.sub(lambda m: f"{m.group('file')}?v={BUILD}", text)
+              path.write_text(text, encoding='utf-8')
+
+          Path('.github/workflows/force-cache-refresh.yml').unlink()
+
+      - name: Commit patched pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html admin.html .github/workflows/force-cache-refresh.yml
+          git commit -m "Force refresh stale site assets"
+          git push
