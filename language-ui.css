@@ -1,0 +1,176 @@
+/* kalbu departamentas pagaliau gavo biudzeta */
+.language-box {
+  position: relative;
+  min-width: 245px !important;
+  padding: 7px 9px !important;
+  border: 2px solid #ffe56d !important;
+  background: linear-gradient(180deg, #22230c, #0b1020) !important;
+  box-shadow: 0 0 0 1px #5d5316, 0 0 14px rgba(255,229,109,.45), inset 1px 1px #5f602c !important;
+  animation: languagePulse 1.7s ease-in-out infinite;
+}
+.language-box::after {
+  content: "LANGUAGE / KALBA / ???";
+  position: absolute;
+  top: -9px;
+  right: 7px;
+  padding: 1px 6px;
+  color: #111;
+  background: #ffe56d;
+  border: 1px solid #fff7bd;
+  font: 900 8px Tahoma, sans-serif;
+  letter-spacing: .4px;
+  box-shadow: 2px 2px #000;
+}
+.language-box select {
+  height: 29px !important;
+  font-size: 11px !important;
+  cursor: pointer;
+  outline: 2px solid rgba(255,229,109,.15);
+}
+.language-label {
+  font-size: 24px !important;
+  animation: globeWobble 2.4s ease-in-out infinite;
+}
+.translation-quality {
+  color: #ffe790 !important;
+  font-weight: 800;
+  font-size: 9px !important;
+}
+
+@keyframes languagePulse {
+  0%,100% { filter: brightness(1); transform: translateY(0); }
+  50% { filter: brightness(1.13); transform: translateY(-1px); }
+}
+@keyframes globeWobble {
+  0%,100% { transform: rotate(-8deg) scale(1); }
+  50% { transform: rotate(9deg) scale(1.12); }
+}
+
+.language-firstboot {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.82);
+  backdrop-filter: blur(3px);
+}
+.language-firstboot-window {
+  width: min(540px, 96vw);
+  color: #111;
+  background: #c8c8c8;
+  border: 3px outset #eee;
+  box-shadow: 12px 12px 0 rgba(0,0,0,.7), 0 0 40px rgba(90,130,255,.35);
+  animation: bootWindowIn .28s cubic-bezier(.2,.9,.2,1.15);
+}
+.language-firstboot-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  color: #fff;
+  background: linear-gradient(90deg, #173b91, #6e8bd0, #244b9e);
+  border-bottom: 1px solid #fff;
+  font: 900 12px Tahoma, sans-serif;
+  text-shadow: 1px 1px #001d5e;
+}
+.language-firstboot-body {
+  padding: 22px;
+  background: #d6d6d6;
+  font-family: Tahoma, sans-serif;
+}
+.language-firstboot-warning {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.language-firstboot-icon {
+  font-size: 45px;
+  filter: drop-shadow(2px 2px #777);
+}
+.language-firstboot h2 {
+  margin: 0 0 7px;
+  font-size: 19px;
+  text-transform: uppercase;
+}
+.language-firstboot p {
+  margin: 5px 0;
+  line-height: 1.45;
+  font-size: 12px;
+}
+.language-secret-target {
+  margin-top: 14px;
+  padding: 8px 10px;
+  color: #6b5c00;
+  background: #fff6b7;
+  border: 1px dashed #8a7610;
+  font: 800 10px "Courier New", monospace;
+}
+.language-confirm {
+  display: block;
+  width: min(330px, 100%);
+  margin: 18px auto 0;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(#5f88df, #2f54aa);
+  border: 2px solid #eff5ff;
+  border-right-color: #17336d;
+  border-bottom-color: #17336d;
+  box-shadow: inset 1px 1px #bdd0ff, inset -1px -1px #18336d, 3px 3px #777;
+  font: 900 12px Tahoma, sans-serif;
+  animation: confirmNudge 1.1s ease-in-out infinite;
+}
+.language-confirm:hover { filter: brightness(1.2); transform: scale(1.02); }
+.language-firstboot-small {
+  display: block;
+  margin-top: 12px;
+  text-align: center;
+  color: #666;
+  font: 9px Tahoma, sans-serif;
+}
+
+.language-switch-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000001;
+  pointer-events: none;
+  background: #dbe6ff;
+  mix-blend-mode: screen;
+  animation: languageFlash .48s steps(2,end) forwards;
+}
+body.language-glitch .site-shell {
+  animation: languageGlitch .45s steps(2,end);
+}
+
+@keyframes bootWindowIn {
+  from { opacity: 0; transform: scale(.82) translateY(25px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes confirmNudge {
+  0%,100% { transform: translateX(0); }
+  40% { transform: translateX(-2px); }
+  55% { transform: translateX(2px); }
+}
+@keyframes languageFlash {
+  0% { opacity: 0; }
+  20% { opacity: .95; }
+  45% { opacity: .15; }
+  65% { opacity: .75; }
+  100% { opacity: 0; }
+}
+@keyframes languageGlitch {
+  0% { transform: translate(0); filter: hue-rotate(0); }
+  20% { transform: translate(5px,-2px); filter: hue-rotate(70deg); }
+  40% { transform: translate(-5px,2px); }
+  60% { transform: translate(3px,1px); filter: hue-rotate(-40deg); }
+  100% { transform: none; filter: none; }
+}
+
+@media (max-width: 560px) {
+  .language-box { min-width: 100% !important; }
+  .language-firstboot-body { padding: 16px; }
+  .language-firstboot-icon { font-size: 36px; }
+}

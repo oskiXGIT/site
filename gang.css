@@ -1,0 +1,84 @@
+/* FICTIONAL GANG DEPARTMENT — zero real-world usefulness */
+.gang-panel .window-body { padding: 0; overflow: hidden; }
+.gang-hero { position: relative; padding: 22px; min-height: 210px; overflow: hidden; background: radial-gradient(circle at 80% 20%, rgba(87,125,212,.28), transparent 32%), linear-gradient(135deg,#0b1020,#121a31 55%,#07090e); border-bottom: 1px solid #526b9e; }
+.gang-hero:before { content:""; position:absolute; inset:-40%; background: repeating-linear-gradient(45deg,transparent 0 38px,rgba(255,255,255,.025) 39px 40px); animation: gangGrid 18s linear infinite; pointer-events:none; }
+@keyframes gangGrid { to { transform: translate(80px,80px); } }
+.gang-seal { position:absolute; right:24px; top:20px; width:145px; height:145px; border-radius:50%; border:5px double #8ea9e8; display:grid; place-items:center; transform:rotate(8deg); box-shadow:0 0 25px rgba(84,125,220,.3), inset 0 0 28px rgba(84,125,220,.25); color:#cbdcff; text-align:center; font:900 11px/1.2 "Courier New",monospace; letter-spacing:1px; }
+.gang-seal strong { display:block; font-size:34px; line-height:.9; text-shadow:0 0 12px #6f96f3; }
+.gang-seal small { display:block; font-size:8px; margin-top:5px; }
+.gang-hero-copy { position:relative; z-index:2; max-width:620px; padding-right:150px; }
+.gang-kicker { color:#8eaeff; letter-spacing:2px; font:800 10px Tahoma,sans-serif; }
+.gang-hero h2 { margin:7px 0 8px; font-size:32px; line-height:1; text-transform:uppercase; text-shadow:2px 2px #10275f; }
+.gang-hero p { margin:0; color:#aebbd7; max-width:520px; line-height:1.45; }
+.gang-motto { margin-top:12px; display:inline-block; padding:6px 9px; border:1px dashed #7088be; background:#080d18; font:700 11px "Courier New",monospace; color:#d9e5ff; }
+
+.gang-tabs { display:flex; flex-wrap:wrap; gap:5px; padding:8px; background:#090f1d; border-bottom:1px solid #344e83; }
+.gang-tab { cursor:pointer; padding:7px 10px; border:1px outset #8da8de; background:#244a93; color:white; font-weight:800; font-size:11px; }
+.gang-tab.active,.gang-tab:hover { background:#426dc2; }
+.gang-view { display:none; padding:14px; animation:gangIn .18s ease-out; }
+.gang-view.active { display:block; }
+@keyframes gangIn { from { opacity:0; transform:translateY(5px) scale(.995); } to { opacity:1; transform:none; } }
+
+.gang-id-layout { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(240px,.85fr); gap:12px; }
+.gang-card { position:relative; overflow:hidden; min-height:230px; padding:17px; border:2px outset #9eb7eb; background:linear-gradient(145deg,#274d98,#13264d 55%,#091020); box-shadow:5px 5px 0 rgba(0,0,0,.35); }
+.gang-card:after { content:"PROPERTY OF SOME DEPARTMENT"; position:absolute; left:-28px; bottom:22px; transform:rotate(-8deg); color:rgba(255,255,255,.08); font:900 25px Tahoma,sans-serif; white-space:nowrap; }
+.gang-card-top { display:flex; justify-content:space-between; gap:10px; font:800 9px "Courier New",monospace; color:#b9cdfa; }
+.gang-card-name { margin:26px 0 3px; font:900 28px "Courier New",monospace; color:#fff; }
+.gang-card-rank { color:#82ff99; font:800 13px "Courier New",monospace; }
+.gang-card-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px 13px; margin-top:22px; font-size:10px; }
+.gang-card-grid span { color:#8da1cb; display:block; }
+.gang-card-grid b { display:block; margin-top:2px; color:#edf3ff; }
+.gang-card-stamp { position:absolute; right:14px; bottom:13px; padding:7px; border:3px double #ff8b8b; color:#ff9c9c; transform:rotate(-7deg); font:900 10px "Courier New",monospace; }
+.gang-sidebox { border:1px solid #5873a8; background:#0a101d; padding:13px; }
+.gang-sidebox h3 { margin:0 0 10px; font-size:13px; }
+.gang-action { cursor:pointer; width:100%; margin-top:8px; padding:9px; border:1px outset #b7caf2; background:linear-gradient(#557fd5,#2e54a2); color:#fff; font-weight:900; }
+.gang-action:hover { filter:brightness(1.15); transform:translateY(-1px); }
+.gang-action.red { background:linear-gradient(#a94242,#652020); }
+.gang-action:active { transform:translateY(1px); }
+.gang-tiny { margin-top:8px; color:#8396bc; font-size:9px; line-height:1.4; }
+
+.territory-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.territory { position:relative; min-height:120px; padding:11px; cursor:pointer; border:1px solid #6078a8; background:linear-gradient(145deg,#111a2b,#080d16); overflow:hidden; transition:.18s; }
+.territory:hover { transform:translateY(-2px); border-color:#9db8ef; }
+.territory.claimed { background:linear-gradient(145deg,#183522,#0d1b12); border-color:#55a56a; box-shadow:inset 0 0 18px rgba(70,188,100,.12); }
+.territory.disputed { animation:territoryPulse 1s infinite alternate; }
+@keyframes territoryPulse { from { box-shadow:inset 0 0 0 rgba(255,118,118,0); } to { box-shadow:inset 0 0 28px rgba(255,118,118,.16); } }
+.territory-icon { font-size:29px; }
+.territory h4 { margin:6px 0 3px; font-size:12px; }
+.territory small { color:#8fa1c5; font-size:9px; line-height:1.35; }
+.territory-state { position:absolute; right:7px; top:7px; padding:3px 5px; background:#060910; border:1px solid #53688f; font:800 8px "Courier New",monospace; }
+.territory.claimed .territory-state { color:#79e38d; border-color:#477c51; }
+.map-log { margin-top:10px; min-height:60px; max-height:120px; overflow:auto; padding:9px; background:#020403; color:#74ff88; border:1px solid #315038; font:11px/1.4 "Courier New",monospace; }
+
+.radio-wrap { display:grid; grid-template-columns:1fr 210px; gap:10px; }
+.radio-screen { min-height:290px; padding:12px; border:1px inset #566c9b; background:#020403; color:#7fff90; font:12px/1.45 "Courier New",monospace; overflow:auto; }
+.radio-line { margin-bottom:7px; opacity:0; animation:radioAppear .25s forwards; }
+@keyframes radioAppear { to { opacity:1; } }
+.radio-time { color:#5e8c66; }
+.radio-who { color:#b7ffc0; font-weight:900; }
+.radio-controls { border:1px solid #4b6089; background:#0b111e; padding:10px; }
+.radio-led { width:12px; height:12px; border-radius:50%; background:#6aff80; box-shadow:0 0 10px #6aff80; margin:8px auto; animation:ledBlink 1.5s infinite; }
+@keyframes ledBlink { 50% { opacity:.28; } }
+.radio-freq { text-align:center; margin:8px 0; font:900 22px "Courier New",monospace; color:#dfe9ff; }
+.radio-knob { width:70px; height:70px; margin:10px auto; border-radius:50%; border:8px ridge #65769a; background:radial-gradient(circle,#252c3d 0 32%,#080b12 33%); position:relative; transition:.25s; }
+.radio-knob:after { content:""; position:absolute; left:50%; top:5px; width:3px; height:21px; background:#fff; transform:translateX(-50%); }
+
+.rules-list { counter-reset:rule; display:grid; gap:8px; }
+.gang-rule { counter-increment:rule; padding:11px 11px 11px 48px; position:relative; border:1px solid #43597f; background:#0b111d; line-height:1.4; }
+.gang-rule:before { content:counter(rule,"0") "."; position:absolute; left:11px; top:9px; color:#82a8ff; font:900 18px "Courier New",monospace; }
+.gang-rule b { color:#fff; }
+.gang-rule span { color:#94a7ca; font-size:11px; }
+
+.ritual-box { text-align:center; padding:20px; border:1px dashed #687da7; background:#080c15; }
+.ritual-sequence { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:16px 0; }
+.ritual-btn { cursor:pointer; min-width:95px; min-height:72px; border:2px outset #8fa8dc; background:#1b3568; color:white; font:900 12px "Courier New",monospace; transition:.15s; }
+.ritual-btn:hover { transform:scale(1.04) rotate(-1deg); }
+.ritual-btn.correct { background:#275d34; box-shadow:0 0 14px rgba(77,222,109,.3); }
+.ritual-btn.wrong { animation:ritualWrong .25s 2; background:#762d2d; }
+@keyframes ritualWrong { 50% { transform:translateX(7px); } }
+.ritual-progress { font:800 11px "Courier New",monospace; color:#99abd1; }
+.gang-toast { position:fixed; z-index:4000; left:50%; bottom:25px; transform:translate(-50%,30px); opacity:0; width:min(460px,90vw); padding:13px; border:2px outset #b6c9ee; background:#173468; color:#fff; box-shadow:7px 7px 0 #000; font:800 12px "Courier New",monospace; transition:.25s; pointer-events:none; }
+.gang-toast.show { opacity:1; transform:translate(-50%,0); }
+
+@media(max-width:760px){ .gang-seal{position:relative;right:auto;top:auto;margin:14px auto 0}.gang-hero-copy{padding-right:0}.gang-id-layout,.radio-wrap{grid-template-columns:1fr}.territory-grid{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:480px){ .territory-grid{grid-template-columns:1fr}.gang-hero h2{font-size:25px} }
