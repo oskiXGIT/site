@@ -1,0 +1,30 @@
+name: Patch anonymous poll
+
+on:
+  push:
+    paths:
+      - '.github/patch-poll.py'
+      - '.github/workflows/patch-poll.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply poll patch
+        run: python .github/patch-poll.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Add anonymous public poll"
+          git push
