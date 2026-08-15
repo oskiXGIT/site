@@ -1,8 +1,9 @@
 (() => {
+  'use strict';
+
   const SUPABASE_URL = 'https://otyoaqppxycpvpsclqvy.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_mxledKrN2vE7RmdsYQHNFA__wF3CLE4';
   const INTERNAL_EMAIL = 'operator@oski.website';
-  const SESSION_KEY = 'gangRealAdminSessionV1';
 
   const $ = (id) => document.getElementById(id);
   const loginView = $('loginView');
@@ -16,6 +17,7 @@
   const footerStatus = $('footerStatus');
   const sessionUid = $('sessionUid');
 
+  let session = null;
   let editingNoteId = null;
   let cachedNotes = [];
 
@@ -29,59 +31,51 @@
     if (footerStatus) footerStatus.textContent = text;
   }
 
-  function getSession() {
-    try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
-
   function saveSession(data) {
-    const payload = {
+    session = {
       access_token: data.access_token,
-      refresh_token: data.refresh_token,
       expires_at: Date.now() + Math.max(60, Number(data.expires_in || 3600)) * 1000,
       user: data.user || null,
     };
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-    return payload;
   }
 
   function clearSession() {
-    sessionStorage.removeItem(SESSION_KEY);
+    session = null;
   }
 
-  async function refreshSession() {
-    const session = getSession();
-    if (!session?.refresh_token) return false;
+  function lockPanel(message = 'REIKIA RAKTO.') {
+    clearSession();
+    dashboardView.hidden = true;
+    loginView.hidden = false;
+    adminPassword.value = '';
+    setLoginStatus(message, 'bad');
+    setTimeout(() => adminPassword?.focus(), 0);
+  }
 
+  async function revokeCurrentSession({ keepalive = false } = {}) {
+    const token = session?.access_token;
+    if (!token) return;
     try {
-      const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      await fetch(`${SUPABASE_URL}/auth/v1/logout?scope=local`, {
         method: 'POST',
         headers: {
           apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ refresh_token: session.refresh_token }),
+        body: '{}',
+        keepalive,
       });
-      if (!response.ok) return false;
-      saveSession(await response.json());
-      return true;
     } catch {
-      return false;
+      // Memory is cleared regardless. Server-side session validation blocks revoked sessions.
     }
   }
 
-  async function api(path, options = {}, retry = true) {
-    let session = getSession();
-    if (!session) throw new Error('NO_SESSION');
-
-    if (session.expires_at && Date.now() > session.expires_at - 30000) {
-      await refreshSession();
-      session = getSession();
+  async function api(path, options = {}) {
+    if (!session?.access_token) throw new Error('NO_SESSION');
+    if (session.expires_at && Date.now() >= session.expires_at - 5000) {
+      lockPanel('SESIJA BAIGESI. REIK RAKTO.');
+      throw new Error('SESSION_EXPIRED');
     }
 
     const headers = {
@@ -89,17 +83,12 @@
       Authorization: `Bearer ${session.access_token}`,
       ...options.headers,
     };
+    if (options.body !== undefined && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
 
-    if (options.body !== undefined && !headers['Content-Type']) {
-      headers['Content-Type'] = 'application/json';
+    const response = await fetch(`${SUPABASE_URL}${path}`, { ...options, headers });
+    if (response.status === 401 || response.status === 403) {
+      lockPanel('SESIJA ATMESTA. REIK RAKTO.');
     }
-
-    let response = await fetch(`${SUPABASE_URL}${path}`, { ...options, headers });
-
-    if (response.status === 401 && retry && await refreshSession()) {
-      return api(path, options, false);
-    }
-
     return response;
   }
 
@@ -114,12 +103,8 @@
     });
 
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(data?.msg || data?.message || 'LOGIN_FAILED');
-    }
-
+    if (!response.ok || !data?.access_token) throw new Error('LOGIN_FAILED');
     saveSession(data);
-    return data;
   }
 
   async function verifyAdmin() {
@@ -130,17 +115,16 @@
   }
 
   async function enterDashboard() {
-    const allowed = await verifyAdmin();
-    if (!allowed) {
-      clearSession();
-      throw new Error('AUTH_OK_BUT_NOT_ADMIN');
+    if (!await verifyAdmin()) {
+      await revokeCurrentSession();
+      lockPanel('AUTH YRA, BET ADMINO TEISIU NERA.');
+      throw new Error('NOT_ADMIN');
     }
 
-    const session = getSession();
     loginView.hidden = true;
     dashboardView.hidden = false;
     if (sessionUid) sessionUid.textContent = session?.user?.id ? `${session.user.id.slice(0, 8)}…` : '-';
-    setGlobalStatus('AUTH OK / ADMIN OK');
+    setGlobalStatus('AUTH OK / ADMIN OK / MEMORY ONLY');
     await Promise.allSettled([loadComplaints(), loadNotes(), loadControls()]);
   }
 
@@ -157,30 +141,25 @@
 
     try {
       await login(password);
-      setLoginStatus('AUTH PRAEJO. TIKRINAM PAREIGAS...', 'good');
       adminPassword.value = '';
+      setLoginStatus('AUTH PRAEJO. TIKRINAM PAREIGAS...', 'good');
       await enterDashboard();
-    } catch (error) {
+    } catch {
       clearSession();
-      if (String(error.message).includes('AUTH_OK_BUT_NOT_ADMIN')) {
-        setLoginStatus('SLAPTAZODIS GAL IR TEISINGAS, BET ADMINO PAREIGU NERA.', 'bad');
-      } else {
-        setLoginStatus('PRIEIGA ATMESTA. SISTEMA APSIMETA KAD NEZINO KODEL.', 'bad');
-      }
+      setLoginStatus('PRIEIGA ATMESTA.', 'bad');
     } finally {
       loginBtn.disabled = false;
       adminPassword.disabled = false;
+      if (!dashboardView.hidden) return;
       adminPassword.focus();
     }
   }
 
-  function logout() {
-    clearSession();
-    dashboardView.hidden = true;
-    loginView.hidden = false;
-    setLoginStatus('SESIJA SUNAIKINTA.', '');
-    adminPassword.value = '';
-    adminPassword.focus();
+  async function logout() {
+    const tokenWasPresent = Boolean(session?.access_token);
+    if (tokenWasPresent) setGlobalStatus('NAIKINAMA SERVERIO SESIJA...');
+    await revokeCurrentSession();
+    lockPanel('ATSIJUNGTA. NORINT GRIZT REIK RAKTO.');
   }
 
   function formatDate(value) {
@@ -201,16 +180,15 @@
 
   async function loadComplaints() {
     const list = $('complaintsList');
-    if (!list) return;
+    if (!list || !session) return;
     setGlobalStatus('KRAUNAMI SKUNDAI...');
-
     try {
       const response = await api('/rest/v1/gang_ad_complaints?select=case_id,complaint,anger,selected_language,visitor_number,created_at&order=created_at.desc&limit=200');
       if (!response.ok) throw new Error(`HTTP_${response.status}`);
-      const rows = await response.json();
-      renderComplaints(rows);
+      renderComplaints(await response.json());
       setGlobalStatus('SKUNDAI UZKRAUTI');
     } catch {
+      if (!session) return;
       list.replaceChildren(Object.assign(document.createElement('div'), { className: 'empty', textContent: 'nepavyko uzkraut skundu' }));
       setGlobalStatus('SKUNDU MODULIS SUPYKO');
     }
@@ -219,7 +197,6 @@
   function renderComplaints(rows) {
     const list = $('complaintsList');
     list.replaceChildren();
-
     $('complaintCount').textContent = rows.length;
     const avg = rows.length ? Math.round(rows.reduce((sum, row) => sum + Number(row.anger || 0), 0) / rows.length) : 0;
     $('complaintAnger').textContent = `${avg}%`;
@@ -233,7 +210,6 @@
     rows.forEach((row) => {
       const card = document.createElement('article');
       card.className = 'complaint-card';
-
       const head = document.createElement('div');
       head.className = 'complaint-head';
       const id = document.createElement('div');
@@ -248,17 +224,14 @@
       const meta = document.createElement('div');
       meta.className = 'complaint-meta';
       meta.textContent = `${formatDate(row.created_at)} | PYKTIS ${row.anger ?? 0}% | KALBA ${row.selected_language || '?'} | ${row.visitor_number || 'visitor ?'}`;
-
       const text = document.createElement('div');
       text.className = 'complaint-text';
       text.textContent = row.complaint || '';
-
       const meter = document.createElement('div');
       meter.className = 'anger-meter';
       const fill = document.createElement('span');
       fill.style.width = `${Math.max(0, Math.min(100, Number(row.anger || 0)))}%`;
       meter.append(fill);
-
       card.append(head, meta, text, meter);
       list.append(card);
     });
@@ -267,14 +240,10 @@
   async function deleteComplaint(caseId) {
     if (!caseId) return;
     const response = await api(`/rest/v1/gang_ad_complaints?case_id=eq.${encodeURIComponent(caseId)}`, {
-      method: 'DELETE',
-      headers: { Prefer: 'return=minimal' },
+      method: 'DELETE', headers: { Prefer: 'return=minimal' },
     });
-    if (!response.ok) {
-      setGlobalStatus('SKUNDO ISTRINT NEPAVYKO');
-      return;
-    }
-    await loadComplaints();
+    if (response.ok) await loadComplaints();
+    else if (session) setGlobalStatus('SKUNDO ISTRINT NEPAVYKO');
   }
 
   async function loadNotes() {
@@ -287,12 +256,10 @@
   function renderNotes() {
     const list = $('notesList');
     list.replaceChildren();
-
     if (!cachedNotes.length) {
       list.append(Object.assign(document.createElement('div'), { className: 'empty', textContent: 'nera uzrasu' }));
       return;
     }
-
     cachedNotes.forEach((note) => {
       const row = document.createElement('button');
       row.type = 'button';
@@ -335,44 +302,31 @@
       $('noteState').textContent = 'REIKIA PAVADINIMO NU';
       return;
     }
-
     const payload = { title, body, updated_at: new Date().toISOString() };
-    let response;
-
-    if (editingNoteId) {
-      response = await api(`/rest/v1/gang_admin_notes?id=eq.${encodeURIComponent(editingNoteId)}`, {
-        method: 'PATCH',
-        headers: { Prefer: 'return=representation' },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      response = await api('/rest/v1/gang_admin_notes', {
-        method: 'POST',
-        headers: { Prefer: 'return=representation' },
-        body: JSON.stringify(payload),
-      });
-    }
-
+    const response = editingNoteId
+      ? await api(`/rest/v1/gang_admin_notes?id=eq.${encodeURIComponent(editingNoteId)}`, {
+          method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(payload),
+        })
+      : await api('/rest/v1/gang_admin_notes', {
+          method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(payload),
+        });
     if (!response.ok) {
-      $('noteState').textContent = `NEISSISAUGOJO (${response.status})`;
+      if (session) $('noteState').textContent = `NEISSISAUGOJO (${response.status})`;
       return;
     }
-
     const data = await response.json().catch(() => []);
     if (!editingNoteId && data[0]?.id) editingNoteId = data[0].id;
-    $('noteState').textContent = 'ISSaugota. kazkaip.';
+    $('noteState').textContent = 'ISSAUGOTA. KAZKAIP.';
     await loadNotes();
   }
 
   async function deleteNote() {
-    if (!editingNoteId) return;
-    if (!confirm('Tikrai trint sita uzrasa?')) return;
+    if (!editingNoteId || !confirm('Tikrai trint sita uzrasa?')) return;
     const response = await api(`/rest/v1/gang_admin_notes?id=eq.${encodeURIComponent(editingNoteId)}`, {
-      method: 'DELETE',
-      headers: { Prefer: 'return=minimal' },
+      method: 'DELETE', headers: { Prefer: 'return=minimal' },
     });
     if (!response.ok) {
-      $('noteState').textContent = 'TRINT NEPAVYKO';
+      if (session) $('noteState').textContent = 'TRINT NEPAVYKO';
       return;
     }
     newNote();
@@ -382,29 +336,24 @@
   async function loadControls() {
     const response = await api('/rest/v1/gang_admin_controls?select=key,value,updated_at&order=key.asc');
     if (!response.ok) throw new Error(`HTTP_${response.status}`);
-    const rows = (await response.json()).filter((row) => row.key !== '__admin_probe');
-    renderControls(rows);
+    renderControls((await response.json()).filter((row) => row.key !== '__admin_probe'));
   }
 
   function renderControls(rows) {
     const list = $('controlsList');
     list.replaceChildren();
-
     if (!rows.length) {
       list.append(Object.assign(document.createElement('div'), { className: 'empty', textContent: 'nera valdymo raktu. dar.' }));
       return;
     }
-
     rows.forEach((row) => {
       const card = document.createElement('article');
       card.className = 'control-card';
-
       const head = document.createElement('div');
       head.className = 'control-head';
       const key = document.createElement('div');
       key.className = 'case-id';
       key.textContent = row.key;
-
       const actions = document.createElement('div');
       const edit = button('REDAGUOT', 'small-btn', () => {
         $('controlKey').value = row.key;
@@ -414,14 +363,12 @@
       const del = button('TRINT', 'small-btn danger', async () => {
         if (!confirm(`Trint rakta ${row.key}?`)) return;
         const response = await api(`/rest/v1/gang_admin_controls?key=eq.${encodeURIComponent(row.key)}`, {
-          method: 'DELETE',
-          headers: { Prefer: 'return=minimal' },
+          method: 'DELETE', headers: { Prefer: 'return=minimal' },
         });
         if (response.ok) await loadControls();
       });
       actions.append(edit, document.createTextNode(' '), del);
       head.append(key, actions);
-
       const value = document.createElement('pre');
       value.className = 'control-value';
       value.textContent = JSON.stringify(row.value, null, 2);
@@ -437,7 +384,6 @@
       setGlobalStatus('BLOGAS RAKTAS');
       return;
     }
-
     let value;
     try {
       value = raw ? JSON.parse(raw) : {};
@@ -445,20 +391,15 @@
       setGlobalStatus('JSON SUGEDES');
       return;
     }
-
     const response = await api('/rest/v1/gang_admin_controls?on_conflict=key', {
       method: 'POST',
-      headers: {
-        Prefer: 'resolution=merge-duplicates,return=minimal',
-      },
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({ key, value, updated_at: new Date().toISOString() }),
     });
-
     if (!response.ok) {
-      setGlobalStatus(`VALDYMO RAKTAS NEISSISAUGOJO (${response.status})`);
+      if (session) setGlobalStatus(`VALDYMO RAKTAS NEISSISAUGOJO (${response.status})`);
       return;
     }
-
     $('controlKey').value = '';
     $('controlValue').value = '';
     setGlobalStatus('VALDYMO RAKTAS ISSAUGOTAS');
@@ -471,9 +412,7 @@
   }
 
   loginBtn?.addEventListener('click', handleLogin);
-  adminPassword?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') handleLogin();
-  });
+  adminPassword?.addEventListener('keydown', (event) => { if (event.key === 'Enter') handleLogin(); });
   logoutBtn?.addEventListener('click', logout);
   purgeSessionBtn?.addEventListener('click', logout);
   $('refreshComplaints')?.addEventListener('click', loadComplaints);
@@ -485,25 +424,30 @@
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
 
   setInterval(() => {
-    const now = new Date();
     const el = $('adminClock');
-    if (el) el.textContent = now.toLocaleTimeString('lt-LT', { hour12: false });
+    if (el) el.textContent = new Date().toLocaleTimeString('lt-LT', { hour12: false });
   }, 1000);
 
-  (async () => {
-    const existing = getSession();
-    if (!existing) {
-      adminPassword?.focus();
-      return;
-    }
-
-    setLoginStatus('RASTA SENA SESIJA. TIKRINAM...', '');
+  window.addEventListener('pagehide', () => {
+    const token = session?.access_token;
+    clearSession();
+    if (!token) return;
     try {
-      await enterDashboard();
-    } catch {
-      clearSession();
-      setLoginStatus('SENA SESIJA NEGALIOJA. REIK RAKTO.', 'bad');
-      adminPassword?.focus();
-    }
-  })();
+      fetch(`${SUPABASE_URL}/auth/v1/logout?scope=local`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: '{}',
+        keepalive: true,
+      }).catch(() => {});
+    } catch {}
+  });
+
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) lockPanel('PUSLAPIS BUVO UZMIGDYTAS. REIK RAKTO.');
+  });
+
+  dashboardView.hidden = true;
+  loginView.hidden = false;
+  setLoginStatus('LAUKIAMA OPERATORIAUS. KIEKVIENAS NAUJAS IKELIMAS REIKALAUJA RAKTO.', '');
+  adminPassword?.focus();
 })();
