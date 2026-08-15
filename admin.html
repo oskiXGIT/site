@@ -104,8 +104,27 @@
             <div id="postsList" class="side-list post-list"><div class="empty">nera postu</div></div>
           </div>
           <div class="editor post-editor">
-            <input id="postTitle" maxlength="160" placeholder="posto pavadinimas" />
-            <textarea id="postBody" maxlength="20000" placeholder="rasai nesamone ir ji atsiranda pagrindiniam puslapy"></textarea>
+            <div class="translation-toolbar">
+              <label>REDAGUOJAMA KALBA
+                <select id="postTranslationLang">
+                <option value="lt">LT · LIETUVIŲ</option>
+                <option value="en">EN · ENGLISH</option>
+                <option value="fr">FR · FRANÇAIS</option>
+                <option value="zh">ZH · 中文</option>
+                <option value="ru">RU · РУССКИЙ</option>
+                <option value="eo">EO · ESPERANTO</option>
+                <option value="la">LA · LATINA</option>
+                <option value="fo">FO · FØROYSKT</option>
+                <option value="cy">CY · CYMRAEG</option>
+                <option value="eu">EU · EUSKARA</option>
+                <option value="br">BR · BREZHONEG</option>
+                </select>
+              </label>
+              <span id="postTranslationCount">VERTIMAI 0/11</span>
+            </div>
+            <input id="postTitle" maxlength="160" placeholder="posto pavadinimas SITOJ kalboj" />
+            <textarea id="postBody" maxlength="20000" placeholder="posto tekstas SITOJ kalboj"></textarea>
+            <div class="translation-hint">pakeitus kalba laukai persijungia i tos pacios posto versija. viskas issisaugo vienam poste.</div>
             <div class="post-flags">
               <label><input id="postPinned" type="checkbox" /> PRISEGTAS VIRSUJ</label>
             </div>
@@ -137,18 +156,29 @@
             </div>
             <label class="archive-check"><input id="archiveLocked" type="checkbox" /> UZRAKINTAS / NEATIDAROMAS</label>
 
-            <div class="archive-lang-block"><b>LT</b>
-              <input id="archiveSummaryLt" maxlength="240" placeholder="trumpas pavadinimas" />
-              <textarea id="archiveBodyLt" maxlength="20000" placeholder="pilnas archyvo tekstas"></textarea>
+            <div class="translation-toolbar">
+              <label>REDAGUOJAMA KALBA
+                <select id="archiveTranslationLang">
+                <option value="lt">LT · LIETUVIŲ</option>
+                <option value="en">EN · ENGLISH</option>
+                <option value="fr">FR · FRANÇAIS</option>
+                <option value="zh">ZH · 中文</option>
+                <option value="ru">RU · РУССКИЙ</option>
+                <option value="eo">EO · ESPERANTO</option>
+                <option value="la">LA · LATINA</option>
+                <option value="fo">FO · FØROYSKT</option>
+                <option value="cy">CY · CYMRAEG</option>
+                <option value="eu">EU · EUSKARA</option>
+                <option value="br">BR · BREZHONEG</option>
+                </select>
+              </label>
+              <span id="archiveTranslationCount">VERTIMAI 0/11</span>
             </div>
-            <div class="archive-lang-block"><b>EN</b>
-              <input id="archiveSummaryEn" maxlength="240" placeholder="short label" />
-              <textarea id="archiveBodyEn" maxlength="20000" placeholder="full archive text"></textarea>
+            <div class="archive-lang-block">
+              <input id="archiveSummary" maxlength="240" placeholder="trumpas pavadinimas SITOJ kalboj" />
+              <textarea id="archiveBody" maxlength="20000" placeholder="pilnas archyvo tekstas SITOJ kalboj"></textarea>
             </div>
-            <div class="archive-lang-block"><b>FR</b>
-              <input id="archiveSummaryFr" maxlength="240" placeholder="petit label" />
-              <textarea id="archiveBodyFr" maxlength="20000" placeholder="texte complet"></textarea>
-            </div>
+            <div class="translation-hint">metai / kodas, uzrakinimas ir eile yra bendri. pavadinimas ir tekstas keiciasi pagal kalba.</div>
 
             <div class="editor-actions">
               <button id="saveArchiveBtn" class="small-btn">ISSAUGOT PAKEITIMUS</button>
@@ -180,6 +210,6 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260816c"></script>
+  <script src="admin.js?v=20260816d"></script>
 </body>
 </html>

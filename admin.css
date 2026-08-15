@@ -23,3 +23,12 @@
 .archive-lang-block > b { display:block; margin-bottom:6px; }
 .archive-lang-block textarea { min-height:105px; }
 @media (max-width:760px) { .archive-admin-layout { grid-template-columns:1fr; } .archive-meta-grid { grid-template-columns:1fr; } }
+
+
+/* CONTENT_I18N_EDITOR */
+.translation-toolbar { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin:0 0 9px; padding:9px; border:1px dashed rgba(255,255,255,.18); background:rgba(0,0,0,.18); }
+.translation-toolbar label { display:grid; gap:5px; font-size:10px; letter-spacing:.08em; opacity:.88; }
+.translation-toolbar select { min-width:210px; max-width:100%; padding:8px 9px; color:inherit; background:#090d12; border:1px solid rgba(255,255,255,.22); font:inherit; }
+.translation-toolbar span { font-size:11px; opacity:.72; white-space:nowrap; }
+.translation-hint { font-size:11px; line-height:1.45; opacity:.58; margin:-2px 0 8px; }
+@media (max-width:620px) { .translation-toolbar { align-items:stretch; flex-direction:column; } .translation-toolbar select { width:100%; } }
