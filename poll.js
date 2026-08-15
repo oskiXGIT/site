@@ -8,6 +8,7 @@
   const questionEl = document.getElementById('pollQuestion');
   const optionsEl = document.getElementById('pollOptions');
   const totalEl = document.getElementById('pollTotal');
+  const totalLabelEl = document.getElementById('pollTotalLabel');
   const statusEl = document.getElementById('pollStatus');
   const voteBtn = document.getElementById('pollVoteBtn');
   const badgeEl = document.getElementById('pollLiveBadge');
@@ -16,7 +17,7 @@
   if (!questionEl || !optionsEl || !voteBtn) return;
 
   const COPY = {
-    lt: { nav:'BALSAVIMAS', vote:'BALSUOT', total:'BALSU IS VISO', live:'LIVE', closed:'UZDARYTA', loading:'KRAUNAMA DEMOKRATIJA...', pick:'PASIRINK VIENA NU', done:'BALSAS UZSKAITYTAS. VALSTYBE DEKOJA GAL.', already:'TU JAU BALSAIVAI. ANTRA KARTA NELEIDZIA SITAS BROWSERIS.', error:'BALSAVIMO SERVERIS APSIMETE MIRUSIU.', privacy:'ANONIMINE: IP / PASKYRA / FINGERPRINTAS NESAUgomi. SERVERYJE LIEKA TIK ATSITIKTINIO BROWSERIO RAKTO HASHAS.' },
+    lt: { nav:'BALSAVIMAS', vote:'BALSUOT', total:'BALSU IS VISO', live:'LIVE', closed:'UZDARYTA', loading:'KRAUNAMA DEMOKRATIJA...', pick:'PASIRINK VIENA NU', done:'BALSAS UZSKAITYTAS. VALSTYBE DEKOJA GAL.', already:'TU JAU BALSAVAI. ANTRA KARTA NELEIDZIA SITAS BROWSERIS.', error:'BALSAVIMO SERVERIS APSIMETE MIRUSIU.', privacy:'ANONIMINE: IP / PASKYRA / FINGERPRINTAS NESAUGOMI. SERVERYJE LIEKA TIK ATSITIKTINIO BROWSERIO RAKTO HASHAS.' },
     en: { nav:'VOTE THING', vote:'VOTE FR', total:'TOTAL VOTES', live:'LIVE', closed:'CLOSED', loading:'LOADING DEMOCRACY...', pick:'PICK ONE BRO', done:'VOTE COUNTED. GOVERNMENT PROBABLY THANKS YOU.', already:'YOU ALREADY VOTED. THIS BROWSER GETS ONE.', error:'VOTING SERVER IS PRETENDING TO BE DEAD.', privacy:'ANONYMOUS: NO IP / ACCOUNT / FINGERPRINT STORED. SERVER ONLY KEEPS A HASH OF A RANDOM BROWSER TOKEN.' },
     fr: { nav:'VOTE CHELOU', vote:'VOTER WESH', total:'VOTES AU TOTAL', live:'LIVE', closed:'FERME', loading:'LA DEMOCRATIE CHARGE...', pick:'CHOISIS UN TRUC FRR', done:'VOTE COMPTE. LA REPUBLIQUE EST CONTENTE PEUT-ETRE.', already:'T AS DEJA VOTE. CE NAVIGATEUR EN A UN.', error:'LE SERVEUR DE VOTE FAIT LE MORT.', privacy:'ANONYME: PAS D IP / COMPTE / EMPREINTE. LE SERVEUR GARDE JUSTE LE HASH D UN TOKEN ALEATOIRE DU NAVIGATEUR.' },
     zh: { nav:'投票部门', vote:'提交这个票', total:'总票数', live:'正在活着', closed:'已经关闭', loading:'民主系统加载中...', pick:'请选择一个东西', done:'票已经被系统接受。大概。', already:'这个浏览器已经投过一次。部门不同意第二次。', error:'投票服务器目前声称不存在。', privacy:'匿名说明：不保存IP、账号或浏览器指纹。服务器只保存随机浏览器令牌的哈希。' },
@@ -31,6 +32,7 @@
 
   let poll = null;
   let selected = null;
+  let renderedVersion = null;
 
   function lang() {
     const code = languageSelect?.value || localStorage.getItem('oskiLang') || 'lt';
@@ -67,6 +69,7 @@
     const t = text();
     if (pollNav) pollNav.textContent = t.nav;
     if (privacyEl) privacyEl.textContent = t.privacy;
+    if (totalLabelEl) totalLabelEl.textContent = t.total;
     if (voteBtn) voteBtn.textContent = t.vote;
     if (poll) render();
   }
@@ -80,6 +83,11 @@
       statusEl.textContent = t.error;
       voteBtn.disabled = true;
       return;
+    }
+
+    if (renderedVersion !== poll.version) {
+      renderedVersion = poll.version;
+      selected = null;
     }
 
     questionEl.textContent = poll.question;
