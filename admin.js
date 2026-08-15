@@ -96,6 +96,25 @@
     return response;
   }
 
+  async function requestAutoTranslations(type, sourceLanguage, title, body) {
+    const response = await api('/functions/v1/translate-content', {
+      method: 'POST',
+      body: JSON.stringify({
+        type,
+        source_language: sourceLanguage,
+        title,
+        body,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const error = new Error(data?.error || `HTTP_${response.status}`);
+      error.code = data?.error || `HTTP_${response.status}`;
+      throw error;
+    }
+    return data?.translations && typeof data.translations === 'object' ? data.translations : {};
+  }
+
   async function login(password) {
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: 'POST',
@@ -457,6 +476,39 @@
     loadPostLanguage($('postTranslationLang')?.value || 'lt');
   }
 
+  async function autoTranslatePost() {
+    commitPostLanguage();
+    const sourceTitle = postTitleMap[postLang] || '';
+    const sourceBody = postBodyMap[postLang] || '';
+    if (!sourceTitle.trim() && !sourceBody.trim()) {
+      $('postState').textContent = 'PIRMA PARASYK SOURCE TEKSTA SITOJ KALBOJ';
+      return;
+    }
+
+    const btn = $('autoTranslatePostBtn');
+    if (btn) btn.disabled = true;
+    $('postState').textContent = `VERTIMU DEPARTAMENTAS DIRBA IS ${postLang.toUpperCase()}...`;
+
+    try {
+      const translations = await requestAutoTranslations('post', postLang, sourceTitle, sourceBody);
+      Object.entries(translations).forEach(([code, value]) => {
+        if (!CONTENT_LANGS.includes(code) || code === postLang || !value || typeof value !== 'object') return;
+        postTitleMap[code] = typeof value.title === 'string' ? value.title : '';
+        postBodyMap[code] = typeof value.body === 'string' ? value.body : '';
+      });
+      loadPostLanguage(postLang);
+      $('postState').textContent = `AUTO VERTIMAI PARUOSTI · ${countTranslations(postTitleMap, postBodyMap)}/${CONTENT_LANGS.length} · DAR REIK ISSAUGOT/PUBLIKUOT`;
+    } catch (error) {
+      const code = error?.code || '';
+      if (code === 'OPENAI_API_KEY_MISSING') $('postState').textContent = 'TRUKSTA OPENAI_API_KEY SUPABASE SECRET';
+      else if (code === 'SOURCE_TOO_LONG') $('postState').textContent = 'TEKSTAS PER ILGAS AUTO VERTIMUI';
+      else if (code === 'ADMIN_ONLY') $('postState').textContent = 'VERTIMU DEPARTAMENTAS TAVES NEPAZINO';
+      else $('postState').textContent = `AUTO VERTIMAI NEPAVYKO (${code || '???'})`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async function loadPosts() {
     const response = await api('/rest/v1/gang_posts?select=id,title,body,title_i18n,body_i18n,published,pinned,created_at,updated_at,published_at&order=pinned.desc,published_at.desc.nullslast,created_at.desc');
     if (!response.ok) throw new Error(`HTTP_${response.status}`);
@@ -604,6 +656,39 @@
     loadArchiveLanguage($('archiveTranslationLang')?.value || 'lt');
   }
 
+  async function autoTranslateArchive() {
+    commitArchiveLanguage();
+    const sourceTitle = archiveSummaryMap[archiveLang] || '';
+    const sourceBody = archiveBodyMap[archiveLang] || '';
+    if (!sourceTitle.trim() && !sourceBody.trim()) {
+      $('archiveState').textContent = 'PIRMA PARASYK SOURCE TEKSTA SITOJ KALBOJ';
+      return;
+    }
+
+    const btn = $('autoTranslateArchiveBtn');
+    if (btn) btn.disabled = true;
+    $('archiveState').textContent = `VERTIMU DEPARTAMENTAS DIRBA IS ${archiveLang.toUpperCase()}...`;
+
+    try {
+      const translations = await requestAutoTranslations('archive', archiveLang, sourceTitle, sourceBody);
+      Object.entries(translations).forEach(([code, value]) => {
+        if (!CONTENT_LANGS.includes(code) || code === archiveLang || !value || typeof value !== 'object') return;
+        archiveSummaryMap[code] = typeof value.title === 'string' ? value.title : '';
+        archiveBodyMap[code] = typeof value.body === 'string' ? value.body : '';
+      });
+      loadArchiveLanguage(archiveLang);
+      $('archiveState').textContent = `AUTO VERTIMAI PARUOSTI · ${countTranslations(archiveSummaryMap, archiveBodyMap)}/${CONTENT_LANGS.length} · DAR REIK ISSAUGOT/PUBLIKUOT`;
+    } catch (error) {
+      const code = error?.code || '';
+      if (code === 'OPENAI_API_KEY_MISSING') $('archiveState').textContent = 'TRUKSTA OPENAI_API_KEY SUPABASE SECRET';
+      else if (code === 'SOURCE_TOO_LONG') $('archiveState').textContent = 'TEKSTAS PER ILGAS AUTO VERTIMUI';
+      else if (code === 'ADMIN_ONLY') $('archiveState').textContent = 'VERTIMU DEPARTAMENTAS TAVES NEPAZINO';
+      else $('archiveState').textContent = `AUTO VERTIMAI NEPAVYKO (${code || '???'})`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async function loadArchives() {
     const response = await api('/rest/v1/gang_archives?select=id,year_label,summary_lt,summary_en,summary_fr,body_lt,body_en,body_fr,summary_i18n,body_i18n,published,locked,sort_order,created_at,updated_at&order=sort_order.asc,created_at.asc');
     if (!response.ok) throw new Error(`HTTP_${response.status}`);
@@ -727,9 +812,11 @@
   }
 
   $('postTranslationLang')?.addEventListener('change', switchPostLanguage);
+  $('autoTranslatePostBtn')?.addEventListener('click', autoTranslatePost);
   $('postTitle')?.addEventListener('input', commitPostLanguage);
   $('postBody')?.addEventListener('input', commitPostLanguage);
   $('archiveTranslationLang')?.addEventListener('change', switchArchiveLanguage);
+  $('autoTranslateArchiveBtn')?.addEventListener('click', autoTranslateArchive);
   $('archiveSummary')?.addEventListener('input', commitArchiveLanguage);
   $('archiveBody')?.addEventListener('input', commitArchiveLanguage);
 

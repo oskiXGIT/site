@@ -120,11 +120,12 @@
                 <option value="br">BR · BREZHONEG</option>
                 </select>
               </label>
+              <button id="autoTranslatePostBtn" class="small-btn" type="button" title="paima dabar pasirinkta kalba ir sugeneruoja kitas 10">AUTO VERTIMAI</button>
               <span id="postTranslationCount">VERTIMAI 0/11</span>
             </div>
             <input id="postTitle" maxlength="160" placeholder="posto pavadinimas SITOJ kalboj" />
             <textarea id="postBody" maxlength="20000" placeholder="posto tekstas SITOJ kalboj"></textarea>
-            <div class="translation-hint">pakeitus kalba laukai persijungia i tos pacios posto versija. viskas issisaugo vienam poste.</div>
+            <div class="translation-hint">pakeitus kalba laukai persijungia i tos pacios posto versija. AUTO VERTIMAI naudoja dabar pasirinkta kalba kaip source ir uzpildo likusias 10.</div>
             <div class="post-flags">
               <label><input id="postPinned" type="checkbox" /> PRISEGTAS VIRSUJ</label>
             </div>
@@ -172,13 +173,14 @@
                 <option value="br">BR · BREZHONEG</option>
                 </select>
               </label>
+              <button id="autoTranslateArchiveBtn" class="small-btn" type="button" title="paima dabar pasirinkta kalba ir sugeneruoja kitas 10">AUTO VERTIMAI</button>
               <span id="archiveTranslationCount">VERTIMAI 0/11</span>
             </div>
             <div class="archive-lang-block">
               <input id="archiveSummary" maxlength="240" placeholder="trumpas pavadinimas SITOJ kalboj" />
               <textarea id="archiveBody" maxlength="20000" placeholder="pilnas archyvo tekstas SITOJ kalboj"></textarea>
             </div>
-            <div class="translation-hint">metai / kodas, uzrakinimas ir eile yra bendri. pavadinimas ir tekstas keiciasi pagal kalba.</div>
+            <div class="translation-hint">metai / kodas, uzrakinimas ir eile yra bendri. AUTO VERTIMAI paima dabar redaguojama kalba ir uzpildo likusias 10.</div>
 
             <div class="editor-actions">
               <button id="saveArchiveBtn" class="small-btn">ISSAUGOT PAKEITIMUS</button>
@@ -210,6 +212,6 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260816d"></script>
+  <script src="admin.js?v=20260816e"></script>
 </body>
 </html>
