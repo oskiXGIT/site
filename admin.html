@@ -52,6 +52,7 @@
         <button class="tab" data-tab="notes">UZRASAI</button>
         <button class="tab" data-tab="controls">VALDYMAS</button>
         <button class="tab" data-tab="posts">POSTAI</button>
+        <button class="tab" data-tab="archives">ARCHYVAI</button>
         <button class="tab" data-tab="session">SESIJA</button>
       </nav>
 
@@ -119,6 +120,47 @@
         </div>
       </section>
 
+      <section class="tab-panel" id="tab-archives">
+        <div class="panel-title"><b>ARCHYVU_REGISTRAS.db</b><button id="newArchiveBtn" class="small-btn">NAUJAS</button></div>
+        <div class="archive-admin-layout">
+          <div>
+            <div class="post-admin-toolbar">
+              <span class="dim">VIESAS ARCHYVAS / TIESIAI I PUSLAPI</span>
+              <button id="refreshArchives" class="small-btn">ATNAUJINT</button>
+            </div>
+            <div id="archivesList" class="side-list archive-admin-list"><div class="empty">kraunam archyvus...</div></div>
+          </div>
+          <div class="editor archive-editor">
+            <div class="archive-meta-grid">
+              <input id="archiveYear" maxlength="32" placeholder="metai / kodas, pvz. 2031" />
+              <input id="archiveSort" type="number" min="-100000" max="100000" step="1" value="0" placeholder="eile" />
+            </div>
+            <label class="archive-check"><input id="archiveLocked" type="checkbox" /> UZRAKINTAS / NEATIDAROMAS</label>
+
+            <div class="archive-lang-block"><b>LT</b>
+              <input id="archiveSummaryLt" maxlength="240" placeholder="trumpas pavadinimas" />
+              <textarea id="archiveBodyLt" maxlength="20000" placeholder="pilnas archyvo tekstas"></textarea>
+            </div>
+            <div class="archive-lang-block"><b>EN</b>
+              <input id="archiveSummaryEn" maxlength="240" placeholder="short label" />
+              <textarea id="archiveBodyEn" maxlength="20000" placeholder="full archive text"></textarea>
+            </div>
+            <div class="archive-lang-block"><b>FR</b>
+              <input id="archiveSummaryFr" maxlength="240" placeholder="petit label" />
+              <textarea id="archiveBodyFr" maxlength="20000" placeholder="texte complet"></textarea>
+            </div>
+
+            <div class="editor-actions">
+              <button id="saveArchiveBtn" class="small-btn">ISSAUGOT PAKEITIMUS</button>
+              <button id="publishArchiveBtn" class="main-btn">PUBLIKUOT / ATNAUJINT</button>
+              <button id="unpublishArchiveBtn" class="small-btn" disabled>NUIMT NUO PUSLAPIO</button>
+              <button id="deleteArchiveBtn" class="small-btn danger" disabled>TRINT</button>
+            </div>
+            <div class="tiny" id="archiveState">NAUJAS ARCHYVO IRASAS / JUODRASTIS</div>
+          </div>
+        </div>
+      </section>
+
       <section class="tab-panel" id="tab-session">
         <div class="panel-title"><b>SESIJOS_DIAGNOSTIKA.txt</b></div>
         <div class="session-grid">
@@ -138,6 +180,6 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260816b"></script>
+  <script src="admin.js?v=20260816c"></script>
 </body>
 </html>

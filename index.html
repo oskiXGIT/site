@@ -97,13 +97,8 @@
 
         <div class="window panel-view" id="archive">
           <div class="window-title"><span>archyvas_2009_final_REAL</span><span>□ ×</span></div>
-          <div class="window-body archive-grid">
-            <button class="archive-item" data-archive="2007"><b>2007</b><span data-i18n="archive.first">pirmas incidentas</span></button>
-            <button class="archive-item" data-archive="2011"><b>2011</b><span data-i18n="archive.van">busiko byla</span></button>
-            <button class="archive-item" data-archive="2016"><b>2016</b><span data-i18n="archive.it">IT katastrofa</span></button>
-            <button class="archive-item" data-archive="2022"><b>2022</b><span>[REDACTED]</span></button>
-            <button class="archive-item" data-archive="2026"><b>2026</b><span data-i18n="archive.revival">atgimimas</span></button>
-            <button class="archive-item locked"><b>????</b><span data-i18n="archive.locked">PRIEIGA UZDRAUSTA</span></button>
+          <div class="window-body archive-grid" id="dynamicArchives">
+            <div class="archive-item locked"><b>...</b><span>kraunamas archyvas...</span></div>
           </div>
         </div>
 
@@ -195,5 +190,6 @@
   <script src="gang.js?v=20260815h"></script>
   <script src="ads.js?v=20260815e"></script>
   <script src="posts.js?v=20260816c"></script>
+  <script src="archives.js?v=20260816a"></script>
 </body>
 </html>

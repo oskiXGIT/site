@@ -22,6 +22,8 @@
   let cachedNotes = [];
   let editingPostId = null;
   let cachedPosts = [];
+  let editingArchiveId = null;
+  let cachedArchives = [];
 
   function setLoginStatus(text, kind = '') {
     loginStatus.textContent = text;
@@ -127,7 +129,7 @@
     dashboardView.hidden = false;
     if (sessionUid) sessionUid.textContent = session?.user?.id ? `${session.user.id.slice(0, 8)}…` : '-';
     setGlobalStatus('AUTH OK / ADMIN OK / MEMORY ONLY');
-    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts()]);
+    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts(), loadArchives()]);
   }
 
   async function handleLogin() {
@@ -534,6 +536,131 @@
     await loadPosts();
   }
 
+
+  async function loadArchives() {
+    const response = await api('/rest/v1/gang_archives?select=id,year_label,summary_lt,summary_en,summary_fr,body_lt,body_en,body_fr,published,locked,sort_order,created_at,updated_at&order=sort_order.asc,created_at.asc');
+    if (!response.ok) throw new Error(`HTTP_${response.status}`);
+    cachedArchives = await response.json();
+    renderArchives();
+  }
+
+  function renderArchives() {
+    const list = $('archivesList');
+    if (!list) return;
+    list.replaceChildren();
+    if (!cachedArchives.length) {
+      list.append(Object.assign(document.createElement('div'), { className: 'empty', textContent: 'archyvu nera. istorija buvo istrinta.' }));
+      return;
+    }
+    cachedArchives.forEach((entry) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = `note-row archive-admin-row${editingArchiveId === entry.id ? ' active' : ''}`;
+      const title = document.createElement('b');
+      title.textContent = `${entry.locked ? '🔒 ' : ''}${entry.year_label} · ${entry.summary_lt || entry.summary_en || '[be pavadinimo]'}`;
+      const meta = document.createElement('small');
+      meta.textContent = `${entry.published ? 'VIESAS' : 'JUODRASTIS'} · EILE ${entry.sort_order}`;
+      row.append(title, meta);
+      row.addEventListener('click', () => openArchive(entry.id));
+      list.append(row);
+    });
+  }
+
+  function newArchive() {
+    editingArchiveId = null;
+    $('archiveYear').value = '';
+    $('archiveSort').value = String((cachedArchives.at(-1)?.sort_order || 0) + 10);
+    $('archiveLocked').checked = false;
+    $('archiveSummaryLt').value = '';
+    $('archiveSummaryEn').value = '';
+    $('archiveSummaryFr').value = '';
+    $('archiveBodyLt').value = '';
+    $('archiveBodyEn').value = '';
+    $('archiveBodyFr').value = '';
+    $('unpublishArchiveBtn').disabled = true;
+    $('deleteArchiveBtn').disabled = true;
+    $('archiveState').textContent = 'NAUJAS ARCHYVO IRASAS / JUODRASTIS';
+    renderArchives();
+    $('archiveYear').focus();
+  }
+
+  function openArchive(id) {
+    const entry = cachedArchives.find((item) => item.id === id);
+    if (!entry) return;
+    editingArchiveId = entry.id;
+    $('archiveYear').value = entry.year_label;
+    $('archiveSort').value = entry.sort_order;
+    $('archiveLocked').checked = Boolean(entry.locked);
+    $('archiveSummaryLt').value = entry.summary_lt || '';
+    $('archiveSummaryEn').value = entry.summary_en || '';
+    $('archiveSummaryFr').value = entry.summary_fr || '';
+    $('archiveBodyLt').value = entry.body_lt || '';
+    $('archiveBodyEn').value = entry.body_en || '';
+    $('archiveBodyFr').value = entry.body_fr || '';
+    $('unpublishArchiveBtn').disabled = !entry.published;
+    $('deleteArchiveBtn').disabled = false;
+    $('archiveState').textContent = `${entry.published ? 'PUBLIKUOTAS' : 'JUODRASTIS'} · ${String(entry.id).slice(0, 8)}…`;
+    renderArchives();
+  }
+
+  async function saveArchive(publishOverride = null) {
+    const year = $('archiveYear').value.trim();
+    if (!year) {
+      $('archiveState').textContent = 'REIKIA METU / KODO';
+      return;
+    }
+    const current = cachedArchives.find((item) => item.id === editingArchiveId);
+    const published = publishOverride === null ? Boolean(current?.published) : Boolean(publishOverride);
+    const payload = {
+      year_label: year,
+      sort_order: Number.parseInt($('archiveSort').value || '0', 10) || 0,
+      locked: $('archiveLocked').checked,
+      summary_lt: $('archiveSummaryLt').value,
+      summary_en: $('archiveSummaryEn').value,
+      summary_fr: $('archiveSummaryFr').value,
+      body_lt: $('archiveBodyLt').value,
+      body_en: $('archiveBodyEn').value,
+      body_fr: $('archiveBodyFr').value,
+      published,
+      updated_at: new Date().toISOString(),
+    };
+    $('archiveState').textContent = published ? 'SAUGOMA / VIESINAMA...' : 'SAUGOMAS JUODRASTIS...';
+    const response = editingArchiveId
+      ? await api(`/rest/v1/gang_archives?id=eq.${encodeURIComponent(editingArchiveId)}`, {
+          method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(payload),
+        })
+      : await api('/rest/v1/gang_archives', {
+          method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(payload),
+        });
+    if (!response.ok) {
+      if (session) $('archiveState').textContent = `NEISSISAUGOJO (${response.status})`;
+      return;
+    }
+    const data = await response.json().catch(() => []);
+    if (!editingArchiveId && data[0]?.id) editingArchiveId = data[0].id;
+    $('archiveState').textContent = published ? 'ARCHYVAS VIESAS.' : 'JUODRASTIS ISSAUGOTAS.';
+    await loadArchives();
+    if (editingArchiveId) openArchive(editingArchiveId);
+  }
+
+  async function unpublishArchive() {
+    if (!editingArchiveId) return;
+    await saveArchive(false);
+  }
+
+  async function deleteArchive() {
+    if (!editingArchiveId || !confirm('Tikrai trint sita archyvo irasa?')) return;
+    const response = await api(`/rest/v1/gang_archives?id=eq.${encodeURIComponent(editingArchiveId)}`, {
+      method: 'DELETE', headers: { Prefer: 'return=minimal' },
+    });
+    if (!response.ok) {
+      if (session) $('archiveState').textContent = 'TRINT NEPAVYKO';
+      return;
+    }
+    newArchive();
+    await loadArchives();
+  }
+
   function setTab(name) {
     document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === name));
     document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.toggle('active', panel.id === `tab-${name}`));
@@ -555,6 +682,12 @@
   $('publishPostBtn')?.addEventListener('click', publishPost);
   $('unpublishPostBtn')?.addEventListener('click', unpublishPost);
   $('deletePostBtn')?.addEventListener('click', deletePost);
+  $('refreshArchives')?.addEventListener('click', loadArchives);
+  $('newArchiveBtn')?.addEventListener('click', newArchive);
+  $('saveArchiveBtn')?.addEventListener('click', () => saveArchive(null));
+  $('publishArchiveBtn')?.addEventListener('click', () => saveArchive(true));
+  $('unpublishArchiveBtn')?.addEventListener('click', unpublishArchive);
+  $('deleteArchiveBtn')?.addEventListener('click', deleteArchive);
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
 
   setInterval(() => {
