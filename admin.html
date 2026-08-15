@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <meta name="theme-color" content="#05070c" />
+  <title>vidinis mazgas</title>
+  <link rel="stylesheet" href="admin.css?v=20260815a" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <main class="admin-shell">
+    <section class="login-window" id="loginView">
+      <div class="win-title"><span>VIDINIS_PRIEIGOS_MAZGAS.exe</span><span>□ ×</span></div>
+      <div class="login-body">
+        <div class="boot-mark">OSKI INTERNAL SYSTEMS</div>
+        <h1>ADMINISTRACIJOS PRIEIGA</h1>
+        <p class="dim">cia jau nebe prikolas. nu beveik.</p>
+
+        <label for="adminPassword">PRIEIGOS RAKTAS</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" spellcheck="false" />
+        <button id="loginBtn" class="main-btn">AUTENTIFIKUOTIS</button>
+
+        <div class="login-status" id="loginStatus">LAUKIAMA OPERATORIAUS.</div>
+        <div class="tiny">VARTOTOJO IDENTITETAS: [VIDINIS / NEVIESINAMAS]</div>
+      </div>
+    </section>
+
+    <section class="dashboard" id="dashboardView" hidden>
+      <header class="dash-top">
+        <div>
+          <div class="eyebrow">VIDINIS MAZGAS / AUTENTIFIKUOTA</div>
+          <h1>VALDYMO KAMBARYS</h1>
+        </div>
+        <div class="top-actions">
+          <span class="online-dot"></span><span id="sessionLabel">OPERATORIUS: AKTYVUS</span>
+          <button id="logoutBtn" class="small-btn danger">ATSIJUNGT</button>
+        </div>
+      </header>
+
+      <div class="system-strip">
+        <span id="globalStatus">SISTEMA: LAUKIA NESAMONIU</span>
+        <span id="adminClock">00:00:00</span>
+      </div>
+
+      <nav class="tabs" aria-label="Admin skyriai">
+        <button class="tab active" data-tab="complaints">SKUNDAI</button>
+        <button class="tab" data-tab="notes">UZRASAI</button>
+        <button class="tab" data-tab="controls">VALDYMAS</button>
+        <button class="tab" data-tab="session">SESIJA</button>
+      </nav>
+
+      <section class="tab-panel active" id="tab-complaints">
+        <div class="panel-title"><b>REKLAMU_SKUNDU_DEPARTAMENTAS.db</b><button id="refreshComplaints" class="small-btn">ATNAUJINT</button></div>
+        <div class="stats-row">
+          <div><span>UZKRAUTA</span><b id="complaintCount">0</b></div>
+          <div><span>VID. PYKTIS</span><b id="complaintAnger">0%</b></div>
+          <div><span>PASKUTINIS</span><b id="complaintLatest">-</b></div>
+        </div>
+        <div id="complaintsList" class="card-list"><div class="empty">kraunam skundus...</div></div>
+      </section>
+
+      <section class="tab-panel" id="tab-notes">
+        <div class="panel-title"><b>ASMENINIS_SASVINYS_FINAL.txt</b><button id="newNoteBtn" class="small-btn">NAUJAS</button></div>
+        <div class="split-layout">
+          <div id="notesList" class="side-list"><div class="empty">nera uzrasu</div></div>
+          <div class="editor">
+            <input id="noteTitle" maxlength="120" placeholder="pavadinimas" />
+            <textarea id="noteBody" maxlength="20000" placeholder="rasyt bet ka. cia tik adminui."></textarea>
+            <div class="editor-actions">
+              <button id="saveNoteBtn" class="main-btn">ISSaugot</button>
+              <button id="deleteNoteBtn" class="small-btn danger" disabled>TRINT</button>
+            </div>
+            <div class="tiny" id="noteState">NAUJAS UZRASAS</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-controls">
+        <div class="panel-title"><b>VALDYMO_REGISTRAS.json</b><button id="refreshControls" class="small-btn">ATNAUJINT</button></div>
+        <p class="dim">generic key/value saugykla. veliau bet koki puslapio bajeri galim prijungt prie sito.</p>
+        <div class="control-editor">
+          <input id="controlKey" maxlength="80" placeholder="pvz. emergency_mode" />
+          <textarea id="controlValue" placeholder='JSON, pvz. {"enabled":true}'></textarea>
+          <button id="saveControlBtn" class="main-btn">IRASYT / PERRAŠYT</button>
+        </div>
+        <div id="controlsList" class="card-list"><div class="empty">nera valdymo raktu</div></div>
+      </section>
+
+      <section class="tab-panel" id="tab-session">
+        <div class="panel-title"><b>SESIJOS_DIAGNOSTIKA.txt</b></div>
+        <div class="session-grid">
+          <div><span>BUSENA</span><b>AUTHENTICATED</b></div>
+          <div><span>ROLE</span><b>GANG_ADMIN</b></div>
+          <div><span>UID</span><b id="sessionUid">-</b></div>
+          <div><span>SAUGOJIMAS</span><b>SESSION STORAGE</b></div>
+        </div>
+        <div class="warning-box">SLAPTAZODIS NERA SAUGOMAS GITHUB'E, HTML'E AR SITAM PUSLAPYJE. AUTH SESIJA GALIOJA TIK PO TIKRO SUPABASE PRISIJUNGIMO.</div>
+        <button id="purgeSessionBtn" class="main-btn danger">SUNAIKINT VIETINE SESIJA</button>
+      </section>
+
+      <footer class="dash-footer">
+        <span>© NIEKAS / VIDINIS NAUDOJIMAS</span>
+        <span id="footerStatus">AUTH OK</span>
+      </footer>
+    </section>
+  </main>
+
+  <script src="admin.js?v=20260815a"></script>
+</body>
+</html>
