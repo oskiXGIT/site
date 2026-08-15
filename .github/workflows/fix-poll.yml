@@ -1,0 +1,27 @@
+name: Fix poll UI
+
+on:
+  push:
+    paths:
+      - '.github/fix-poll.py'
+      - '.github/workflows/fix-poll.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply fix
+        run: python .github/fix-poll.py
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Fix poll state refresh"
+          git push
