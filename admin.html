@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex,nofollow,noarchive" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://otyoaqppxycpvpsclqvy.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'; worker-src 'none'; manifest-src 'none'" />
   <meta name="theme-color" content="#05070c" />
   <title>vidinis mazgas</title>
   <link rel="stylesheet" href="admin.css?v=20260815a" />
@@ -95,10 +97,10 @@
           <div><span>BUSENA</span><b>AUTHENTICATED</b></div>
           <div><span>ROLE</span><b>GANG_ADMIN</b></div>
           <div><span>UID</span><b id="sessionUid">-</b></div>
-          <div><span>SAUGOJIMAS</span><b>SESSION STORAGE</b></div>
+          <div><span>SAUGOJIMAS</span><b>MEMORY ONLY</b></div>
         </div>
-        <div class="warning-box">SLAPTAZODIS NERA SAUGOMAS GITHUB'E, HTML'E AR SITAM PUSLAPYJE. AUTH SESIJA GALIOJA TIK PO TIKRO SUPABASE PRISIJUNGIMO.</div>
-        <button id="purgeSessionBtn" class="main-btn danger">SUNAIKINT VIETINE SESIJA</button>
+        <div class="warning-box">SLAPTAZODIS IR AUTH TOKENAI NERA SAUGOMI GITHUB'E AR BROWSERIO STORAGE. PERKROVUS / UZDARIUS PUSLAPI REIKIA PRISIJUNGT IS NAUJO. ATSIJUNGIMAS NAIKINA IR SERVERIO SESIJA.</div>
+        <button id="purgeSessionBtn" class="main-btn danger">ATSIJUNGT IR SUNAIKINT SESIJA</button>
       </section>
 
       <footer class="dash-footer">
@@ -108,6 +110,6 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260815a"></script>
+  <script src="admin.js?v=20260815b"></script>
 </body>
 </html>
