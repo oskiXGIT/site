@@ -430,6 +430,50 @@
   }
 
 
+
+  async function triggerComplaintSpotlight() {
+    if (!session?.access_token) {
+      lockPanel('SESIJOS NERA. REIK RAKTO.');
+      return;
+    }
+    if (!confirm('Paleisti 2 sekundziu rodykles i reklamų skundo mygtuka?')) return;
+
+    const btn = $('triggerComplaintSpotlight');
+    const state = $('complaintSpotlightState');
+    const startsAt = Date.now() + 1500;
+    const expiresAt = startsAt + 2000;
+    const eventId = crypto.randomUUID ? crypto.randomUUID() : `spotlight-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    btn.disabled = true;
+    state.textContent = 'SIUNCIAM SIGNALA I VIESA PUSLAPI...';
+    try {
+      const response = await api('/rest/v1/gang_admin_controls?on_conflict=key', {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'complaint_button_spotlight',
+          value: {
+            event_id: eventId,
+            starts_at: new Date(startsAt).toISOString(),
+            expires_at: new Date(expiresAt).toISOString(),
+            duration_ms: 2000,
+          },
+          updated_at: new Date().toISOString(),
+        }),
+      });
+      if (!response.ok) throw new Error(`HTTP_${response.status}`);
+      state.textContent = 'SIGNALAS PRIIMTAS. RODYKLES STARTUOS UZ ~1.5 S IR VEIKS 2 S.';
+      setGlobalStatus('SKUNDO MYGTUKO RODYKLIU SIGNALAS PALEISTAS');
+      await loadControls();
+    } catch (error) {
+      if (!session) return;
+      state.textContent = `SIGNALO ISSIUST NEPAVYKO (${error.message})`;
+      setGlobalStatus('RODYKLIU SIGNALAS NEPRAEJO');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
   const CONTENT_LANGS = ['lt', 'en', 'fr', 'zh', 'ru', 'eo', 'la', 'fo', 'cy', 'eu', 'br'];
   let postLang = 'lt';
   let postTitleMap = {};
@@ -990,6 +1034,7 @@
   $('deleteNoteBtn')?.addEventListener('click', deleteNote);
   $('refreshControls')?.addEventListener('click', loadControls);
   $('saveControlBtn')?.addEventListener('click', saveControl);
+  $('triggerComplaintSpotlight')?.addEventListener('click', triggerComplaintSpotlight);
   $('refreshPosts')?.addEventListener('click', loadPosts);
   $('newPostBtn')?.addEventListener('click', newPost);
   $('savePostBtn')?.addEventListener('click', savePost);
