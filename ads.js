@@ -174,7 +174,7 @@
 
       sessionStorage.setItem(SPOTLIGHT_SESSION_KEY, signal.event_id);
       spotlightStartTimer = setTimeout(() => {
-        showComplaintSpotlight(Math.max(0, expiresAt - Date.now()));
+        showComplaintSpotlight(Math.min(Number(signal.duration_ms) || 2000, Math.max(0, expiresAt - Date.now())));
       }, Math.max(0, startsAt - Date.now()));
     } catch {
       // The public page remains fully usable when the optional signal is unavailable.
