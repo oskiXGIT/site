@@ -11,8 +11,8 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://otyoaqppxycpvpsclqvy.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'; worker-src 'none'; manifest-src 'none'" />
   <meta name="theme-color" content="#05070c" />
   <title>vidinis mazgas</title>
-  <link rel="stylesheet" href="admin.css?v=20260816_0234" />
-  <script src="cache-bust.js?v=20260816_0234"></script>
+  <link rel="stylesheet" href="admin.css?v=20260918_2030" />
+  <script src="cache-bust.js?v=20260918_2030"></script>
 </head>
 <body>
   <div class="scanlines" aria-hidden="true"></div>
@@ -90,6 +90,14 @@
       <section class="tab-panel" id="tab-controls">
         <div class="panel-title"><b>VALDYMO_REGISTRAS.js?v=20260816_0234on</b><button id="refreshControls" class="small-btn">ATNAUJINT</button></div>
         <p class="dim">generic key/value saugykla. veliau bet koki puslapio bajeri galim prijungt prie sito.</p>
+        <div class="spotlight-control">
+          <div>
+            <b>SKUNDO MYGTUKO SIGNALAS</b>
+            <p>Po paspaudimo viešame puslapyje 2 sekundėms rodomos rodyklės į reklamų skundo mygtuką.</p>
+          </div>
+          <button id="triggerComplaintSpotlight" class="main-btn danger" type="button">PALEISTI 2 S RODYKLES</button>
+          <div class="tiny" id="complaintSpotlightState">LAUKIA ADMINO KOMANDOS.</div>
+        </div>
         <div class="control-editor">
           <input id="controlKey" maxlength="80" placeholder="pvz. emergency_mode" />
           <textarea id="controlValue" placeholder='JSON, pvz. {"enabled":true}'></textarea>
@@ -241,6 +249,6 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260816_0234"></script>
+  <script src="admin.js?v=20260918_2030"></script>
 </body>
 </html>
