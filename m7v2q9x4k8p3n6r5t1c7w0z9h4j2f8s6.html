@@ -10,11 +10,11 @@
   <meta http-equiv="Expires" content="0">
   <title>404</title>
   <style>
-    html,body{height:100%;margin:0;background:#05070c;color:#cfd8e6;font-family:"Courier New",monospace}
+    html,body{height:100%;margin:0;background:#fbf6ea;color:#5f5445;font-family:"Courier New",monospace}
     body{display:grid;place-items:center}
-    .gate{width:min(680px,90vw);padding:24px;border:1px solid #28344b;background:#080d14;box-shadow:12px 14px 0 #000}
+    .gate{width:min(680px,90vw);padding:24px;border:1px solid #d8cfbf;background:#fbf6ea;box-shadow:12px 14px 0 #e8decc}
     .line{font-size:12px;opacity:.75;margin-bottom:14px}
-    input{box-sizing:border-box;width:100%;padding:12px 10px;border:0;border-bottom:1px solid #50617d;outline:none;background:#05070c;color:#e7eefb;font:700 16px/1 "Courier New",monospace;letter-spacing:.08em}
+    input{box-sizing:border-box;width:100%;padding:12px 10px;border:0;border-bottom:1px solid #b9ad9a;outline:none;background:#fbf6ea;color:#5f5445;font:700 16px/1 "Courier New",monospace;letter-spacing:.08em}
     input:focus{border-bottom-color:#9fb6da}
     .status{min-height:18px;margin-top:10px;font-size:11px;opacity:.85;word-break:break-word}
     .inside{white-space:pre-wrap;line-height:1.5}
@@ -93,7 +93,8 @@
 
         status.textContent='AUTH OK · KRAUNAM TURINI...';
 
-        const contentResponse=await fetch(SUPABASE_URL + '/rest/v1/secret_link_content?select=title,body&singleton=eq.true&limit=1',{
+        const photoResponse=await fetch(SUPABASE_URL + '/functions/v1/secret-photo',{
+          method:'GET',
           headers:{
             apikey:SUPABASE_KEY,
             Authorization:'Bearer ' + auth.access_token
@@ -101,25 +102,36 @@
           cache:'no-store'
         });
 
-        const rows=await contentResponse.json().catch(()=>null);
-
-        if(!contentResponse.ok || !Array.isArray(rows) || !rows[0]){
-          const reason=(rows && rows.message) || ('HTTP ' + contentResponse.status + ' / RLS');
-          fail('AUTH PRAEJO, BET TURINYS UZRAKINTAS: ' + reason);
+        if(!photoResponse.ok){
+          const reason=await photoResponse.text().catch(()=>('HTTP ' + photoResponse.status));
+          fail('AUTH PRAEJO, BET NUOTRAUKA UZRAKINTA: ' + reason);
           return;
         }
 
-        const inside=document.createElement('section');
-        inside.className='inside';
+        const blob=await photoResponse.blob();
+        const objectUrl=URL.createObjectURL(blob);
 
-        const title=document.createElement('h1');
-        title.textContent=rows[0].title || 'PRIEIGA SUTEIKTA';
+        document.documentElement.style.background='#fbf6ea';
+        document.body.style.background='#fbf6ea';
+        document.body.style.display='block';
+        document.body.style.margin='0';
+        document.body.style.overflow='hidden';
 
-        const body=document.createElement('div');
-        body.textContent=rows[0].body || '';
+        const img=document.createElement('img');
+        img.src=objectUrl;
+        img.alt='';
+        img.draggable=false;
+        img.style.position='fixed';
+        img.style.inset='0';
+        img.style.width='100vw';
+        img.style.height='100vh';
+        img.style.objectFit='cover';
+        img.style.objectPosition='center';
+        img.style.background='#fbf6ea';
+        img.style.userSelect='none';
+        img.style.webkitUserDrag='none';
 
-        inside.append(title,body);
-        root.replaceChildren(inside);
+        document.body.replaceChildren(img);
         document.title='.';
       }catch(error){
         fail('RYŠIO KLAIDA: ' + (error && error.message ? error.message : 'UNKNOWN'));
