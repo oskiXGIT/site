@@ -38,13 +38,51 @@
   cartBtn.className = 'gang-ad-cart';
   controlDock.appendChild(cartBtn);
 
+  const adI18n = {
+    lt: {
+      cartLabel:'GAUJOS KREPŠYS', cartOpen:'ATIDARYTI KREPŠĮ', cartEmpty:'tuščia kaip pažadai dėl pristatymo.', cartTotal:'KREPŠELIO SUMA: sistema atsisako skaičiuot.', cartTitle:'GAUJOS KREPŠYS',
+      complaintButton:'📣 SKŲST REKLAMAS', complaintHint:'REKLAMŲ SKYRIUS BIJO ŠITO', complaintActive:'✅ SKUNDAS AKTYVUS', caseFallback:'BYLA ???',
+      windowTitle:'REKLAMŲ_SKUNDŲ_DEPARTAMENTAS.exe', formStamp:'FORMA R-404', formTitle:'OFICIALUS REKLAMOS SKUNDAS', formIntro:'rašyk kuo reklamos tave nervina. SISTEMA PRIIMA TIK CAPS LOCK, nes mažosios raidės laikomos nepakankamai piktom.', wait:'STATUSAS: LAUKIAMAS PYKTIS', placeholder:'PVZ: KODEL MAN RODO PLYTA JAU TREČIA KARTA', chars:'{count}/420 RAIDŽIŲ', anger:'PYKTIS: {value}%', cancel:'ATŠAUKT', send:'NU GERAI NU', footnote:'* pateikus skundą reklamos bus laikinai užtildytos 24 valandom. departamentas tai vadina „strateginiu atsitraukimu“.',
+      activeStatus:'SKUNDAS JAU AKTYVUS: {case} | REKLAMOS NUTILDYTOS IKI {until}', activeText:'SKUNDAS PRIIMTAS. REKLAMŲ SKYRIUS DABAR APSIMETA KAD JŪSŲ NĖRA.', withdraw:'ATSIIMT SKUNDĄ (BLOGA IDĖJA)', cancelToast:'SKUNDAS ATŠAUKTAS. REKLAMŲ SKYRIUS ATSIDUSO.', calm:'STATUSAS: PER RAMUS SKUNDAS', heated:'STATUSAS: JAU JAU PYKSTAT', ready:'STATUSAS: BIUROKRATIŠKAI PAKANKAMAI PIKTA', rejected:'ATMESTA: PER MAŽAI CAPS LOCK. REKLAMŲ SKYRIUS NESIJAUČIA ĮŽEISTAS.', acceptedStatus:'SKUNDAS PRIIMTAS: {case} | REKLAMŲ SKYRIUS LAIKINAI PAŠALINTAS IŠ PATALPŲ', acceptedText:'AČIŪ UŽ SKUNDĄ. JIS REALIAI NUKELIAVO Į DUOMENŲ BAZĘ. KAŽKAS DABAR GALI JĮ PERSKAITYT.', done:'NU GERAI UŽTENKA', withdrawToast:'SKUNDAS ATSIIMTAS. REKLAMŲ SKYRIUS BĖGA ATGAL Į PATALPAS.', sentToast:'SKUNDAS {case} PRIIMTAS. POPUP REKLAMOS IŠVARYTOS 24H.', sending:'SIUNČIAM Į CENTRINĘ BAZĘ...', traveling:'STATUSAS: {case} KELIAUJA PER INTERNETO VAMZDĮ', error:'KLAIDA: SKUNDŲ SKYRIUS NEPRISIJUNGĖ PRIE CENTRINĖS BAZĖS. BANDYK DAR KARTĄ.', retry:'NU GERAI NU (DAR KARTĄ)',
+      items:['RAKTAS NUO NEAIŠKIŲ DURŲ','OFICIALI GAUJOS PLYTA','BLUETOOTH ANTENA 9000','VYRIAUSIOJO KĖDĖ MINI','GAISRINIS APARATAS BE GAISRO','KONTEINERIO DALIS','SERVERINĖS PUODELIS','GAUJOS KEPURĖ „OFICIALI“','KAMERA NR. 4 ĮRAŠAS','ETHERNET LAIDAS „PRO“','LAIKINAS DARBUOTOJO PAŽYMĖJIMAS','TUŠČIAS PIRKINIŲ VEŽIMĖLIS']
+    },
+    en: {
+      cartLabel:'GANG CART', cartOpen:'OPEN THE CART', cartEmpty:'empty like delivery promises.', cartTotal:'CART TOTAL: the system refuses to calculate it.', cartTitle:'GANG CART',
+      complaintButton:'📣 COMPLAIN ABOUT ADS', complaintHint:'THE AD DEPARTMENT FEARS THIS', complaintActive:'✅ COMPLAINT ACTIVE', caseFallback:'CASE ???',
+      windowTitle:'AD_COMPLAINTS_DEPARTMENT.exe', formStamp:'FORM R-404', formTitle:'OFFICIAL AD COMPLAINT', formIntro:'write why the ads annoy you. THE SYSTEM ONLY ACCEPTS CAPS LOCK because lowercase is considered not angry enough.', wait:'STATUS: ANGER PENDING', placeholder:'EXAMPLE: WHY DOES IT SHOW ME A BRICK FOR THE THIRD TIME', chars:'{count}/420 CHARACTERS', anger:'ANGER: {value}%', cancel:'CANCEL', send:'FINE THEN', footnote:'* after submitting, ads will be muted for 24 hours. the department calls this a “strategic retreat”.',
+      activeStatus:'COMPLAINT ALREADY ACTIVE: {case} | ADS MUTED UNTIL {until}', activeText:'COMPLAINT ACCEPTED. THE AD DEPARTMENT IS PRETENDING YOU DO NOT EXIST.', withdraw:'WITHDRAW COMPLAINT (BAD IDEA)', cancelToast:'COMPLAINT CANCELLED. THE AD DEPARTMENT EXHALED.', calm:'STATUS: COMPLAINT TOO CALM', heated:'STATUS: OK YOU ARE GETTING MAD', ready:'STATUS: BUREAUCRATICALLY ANGRY ENOUGH', rejected:'REJECTED: NOT ENOUGH CAPS LOCK. THE AD DEPARTMENT DOES NOT FEEL INSULTED.', acceptedStatus:'COMPLAINT ACCEPTED: {case} | THE AD DEPARTMENT HAS BEEN REMOVED FROM THE PREMISES', acceptedText:'THANKS FOR THE COMPLAINT. IT ACTUALLY REACHED THE DATABASE. SOMEBODY MIGHT READ IT.', done:'ALRIGHT ENOUGH', withdrawToast:'COMPLAINT WITHDRAWN. THE AD DEPARTMENT IS RUNNING BACK INSIDE.', sentToast:'COMPLAINT {case} ACCEPTED. POPUP ADS EVICTED FOR 24H.', sending:'SENDING TO CENTRAL DATABASE...', traveling:'STATUS: {case} IS TRAVELLING THROUGH THE INTERNET PIPE', error:'ERROR: THE COMPLAINTS DEPARTMENT COULD NOT REACH THE CENTRAL DATABASE. TRY AGAIN.', retry:'FINE THEN (ONE MORE TIME)',
+      items:['MYSTERY DOOR KEY','OFFICIAL GANG BRICK','BLUETOOTH ANTENNA 9000','MINI CHIEF CHAIR','FIRE EXTINGUISHER WITHOUT FIRE','PART OF A CONTAINER','SERVER ROOM MUG','“OFFICIAL” GANG CAP','CAMERA NO. 4 RECORDING','“PRO” ETHERNET CABLE','TEMPORARY EMPLOYEE ID','EMPTY SHOPPING CART']
+    },
+    fr: {
+      cartLabel:'PANIER DU GANG', cartOpen:'OUVRIR LE PANIER', cartEmpty:'vide comme les promesses de livraison.', cartTotal:'TOTAL DU PANIER : le système refuse de calculer.', cartTitle:'PANIER DU GANG',
+      complaintButton:'📣 SE PLAINDRE DES PUBS', complaintHint:'LE SERVICE PUB A PEUR DE ÇA', complaintActive:'✅ PLAINTE ACTIVE', caseFallback:'DOSSIER ???',
+      windowTitle:'DEPARTEMENT_PLAINTES_PUB.exe', formStamp:'FORMULAIRE R-404', formTitle:'PLAINTE OFFICIELLE CONTRE LES PUBS', formIntro:'écris pourquoi les pubs t’énervent. LE SYSTÈME ACCEPTE SEULEMENT LES MAJUSCULES, les minuscules ne sont pas assez énervées.', wait:'STATUT : COLÈRE ATTENDUE', placeholder:'EXEMPLE : POURQUOI IL ME MONTRE UNE BRIQUE ENCORE', chars:'{count}/420 CARACTÈRES', anger:'COLÈRE : {value}%', cancel:'ANNULER', send:'BON OK', footnote:'* après l’envoi, les pubs seront coupées 24 heures. le département appelle ça une « retraite stratégique ».',
+      activeStatus:'PLAINTE DÉJÀ ACTIVE : {case} | PUBS COUPÉES JUSQU’À {until}', activeText:'PLAINTE ACCEPTÉE. LE SERVICE PUB FAIT COMME SI VOUS N’EXISTIEZ PAS.', withdraw:'RETIRER LA PLAINTE (MAUVAISE IDÉE)', cancelToast:'PLAINTE ANNULÉE. LE SERVICE PUB A SOUPIRÉ.', calm:'STATUT : PLAINTE TROP CALME', heated:'STATUT : VOUS COMMENCEZ À VOUS ÉNERVER', ready:'STATUT : ASSEZ FÂCHÉ POUR LA BUREAUCRATIE', rejected:'REFUSÉ : PAS ASSEZ DE MAJUSCULES. LE SERVICE PUB NE SE SENT PAS INSULTÉ.', acceptedStatus:'PLAINTE ACCEPTÉE : {case} | LE SERVICE PUB A ÉTÉ SORTI DES LOCAUX', acceptedText:'MERCI POUR LA PLAINTE. ELLE EST VRAIMENT ARRIVÉE DANS LA BASE. QUELQU’UN POURRAIT LA LIRE.', done:'BON ÇA SUFFIT', withdrawToast:'PLAINTE RETIRÉE. LE SERVICE PUB REVIENT EN COURANT.', sentToast:'PLAINTE {case} ACCEPTÉE. PUBS POPUP EXPULSÉES 24H.', sending:'ENVOI VERS LA BASE CENTRALE...', traveling:'STATUT : {case} VOYAGE DANS LE TUYAU INTERNET', error:'ERREUR : LE SERVICE DES PLAINTES NE JOINT PAS LA BASE CENTRALE. RÉESSAYE.', retry:'BON OK (ENCORE)',
+      items:['CLÉ DE PORTE MYSTÉRIEUSE','BRIQUE OFFICIELLE DU GANG','ANTENNE BLUETOOTH 9000','MINI CHAISE DU CHEF','EXTINCTEUR SANS FEU','MORCEAU DE CONTENEUR','TASSE DE SALLE SERVEUR','CASQUETTE DU GANG « OFFICIELLE »','ENREGISTREMENT CAMÉRA N° 4','CÂBLE ETHERNET « PRO »','BADGE EMPLOYÉ TEMPORAIRE','CHARIOT VIDE']
+    }
+  };
+
+  function adLang() {
+    const lang = localStorage.getItem('oskiLang') || document.documentElement.lang || 'lt';
+    return adI18n[lang] || adI18n.en;
+  }
+
+  function adT(key, params = {}) {
+    const value = adLang()[key] ?? adI18n.en[key] ?? key;
+    return String(value).replace(/\{(\w+)\}/g, (_, name) => params[name] ?? `{${name}}`);
+  }
+
+  function cartItemLabel(item) {
+    const id = typeof item === 'object' && Number.isInteger(item.id) ? item.id : products.findIndex(product => product.name === item);
+    return id >= 0 ? (adLang().items[id] || products[id]?.name || item.name) : (typeof item === 'object' ? item.name : item);
+  }
+
   const complaintBtn = document.createElement('button');
   complaintBtn.className = 'gang-ad-complaint-btn';
-  complaintBtn.innerHTML = '📣 SKŲST REKLAMAS';
   controlDock.appendChild(complaintBtn);
 
   function updateCart() {
-    cartBtn.innerHTML = `<span class="cart-icon">🛒</span><span><small>GAUJOS KREPŠYS</small><strong>ATIDARYTI KREPŠĮ</strong></span><b class="cart-count">${cart.length}</b>`;
+    cartBtn.innerHTML = `<span class="cart-icon">🛒</span><span><small>${adT('cartLabel')}</small><strong>${adT('cartOpen')}</strong></span><b class="cart-count">${cart.length}</b>`;
     cartBtn.classList.toggle('has-items', cart.length > 0);
     localStorage.setItem('gangCart', JSON.stringify(cart));
   }
@@ -52,10 +90,10 @@
   function updateComplaintButton() {
     if (isSuppressed()) {
       complaintBtn.classList.add('complaint-active');
-      complaintBtn.innerHTML = `✅ SKUNDAS AKTYVUS <small>${complaintCase() || 'BYLA ???'}</small>`;
+      complaintBtn.innerHTML = `${adT('complaintActive')} <small>${complaintCase() || adT('caseFallback')}</small>`;
     } else {
       complaintBtn.classList.remove('complaint-active');
-      complaintBtn.innerHTML = '📣 SKŲST REKLAMAS <small>REKLAMŲ SKYRIUS BIJO ŠITO</small>';
+      complaintBtn.innerHTML = `${adT('complaintButton')} <small>${adT('complaintHint')}</small>`;
     }
   }
 
@@ -166,14 +204,14 @@
     buy.addEventListener('click', () => {
       if (buy.dataset.done) return;
       buy.dataset.done = '1';
-      cart.push(product.name);
+      cart.push({id: products.indexOf(product), name: product.name});
       updateCart();
       const stamp = document.createElement('div');
       stamp.className = 'gang-ad-soldout';
       stamp.textContent = Math.random()>.5 ? 'NUPIRKTA GAL' : 'UŽSAKYMAS KAŽKUR IŠĖJO';
       ad.appendChild(stamp);
       buy.textContent = 'APMOKĖJIMAS APDOROJAMAS NUO 2008';
-      toast(`ĮDĖTA Į KREPŠĮ: ${product.name}`);
+      toast(`${adT('cartLabel')}: ${cartItemLabel({id: products.indexOf(product), name: product.name})}`);
       setTimeout(() => {
         openAds = Math.max(0, openAds - 1);
         clearInterval(timer);
@@ -183,9 +221,10 @@
   }
 
   cartBtn.addEventListener('click', () => {
-    const names = cart.length ? cart.map((x,i)=>`${i+1}. ${x}`).join('\n') : 'tuščia kaip pažadai dėl pristatymo.';
-    if (typeof window.openPopup === 'function') window.openPopup(`${names}\n\nKREPŠELIO SUMA: sistema atsisako skaičiuot.`, 'GAUJOS KREPŠYS');
-    else alert(`GAUJOS KREPŠYS\n\n${names}\n\nKREPŠELIO SUMA: sistema atsisako skaičiuot.`);
+    const names = cart.length ? cart.map((item, i) => `${i + 1}. ${cartItemLabel(item)}`).join('\n') : adT('cartEmpty');
+    const body = `${names}\n\n${adT('cartTotal')}`;
+    if (typeof window.openPopup === 'function') window.openPopup(body, adT('cartTitle'));
+    else alert(`${adT('cartTitle')}\n\n${body}`);
   });
 
   function createComplaintModal() {
@@ -194,20 +233,20 @@
     modal.hidden = true;
     modal.innerHTML = `
       <div class="gang-complaint-window">
-        <div class="gang-complaint-title"><span>REKLAMU_SKUNDU_DEPARTAMENTAS.exe</span><button class="complaint-x">×</button></div>
+        <div class="gang-complaint-title"><span>${adT('windowTitle')}</span><button class="complaint-x">×</button></div>
         <div class="complaint-paper">
-          <div class="complaint-stamp">FORMA R-404</div>
-          <h3>OFICIALUS REKLAMOS SKUNDAS</h3>
-          <p class="complaint-intro">rašyk kuo reklamos tave nervina. SISTEMA PRIIMA TIK CAPS LOCK, nes mažosios raidės laikomos nepakankamai piktom.</p>
-          <div class="complaint-status" id="complaintStatus">STATUSAS: LAUKIAMAS PYKTIS</div>
-          <textarea id="complaintText" maxlength="420" placeholder="PVZ: KODEL MAN RODO PLYTA JAU TREČIA KARTA"></textarea>
+          <div class="complaint-stamp">${adT('formStamp')}</div>
+          <h3>${adT('formTitle')}</h3>
+          <p class="complaint-intro">${adT('formIntro')}</p>
+          <div class="complaint-status" id="complaintStatus">${adT('wait')}</div>
+          <textarea id="complaintText" maxlength="420" placeholder="${adT('placeholder')}"></textarea>
           <div class="complaint-meter"><span id="complaintMeter"></span></div>
-          <div class="complaint-meta"><span id="complaintChars">0/420 RAIDŽIŲ</span><span id="complaintAnger">PYKTIS: 0%</span></div>
+          <div class="complaint-meta"><span id="complaintChars">${adT('chars',{count:0})}</span><span id="complaintAnger">${adT('anger',{value:0})}</span></div>
           <div class="complaint-buttons">
-            <button class="complaint-cancel">ATŠAUKT</button>
-            <button class="complaint-send">NU GERAI NU</button>
+            <button class="complaint-cancel">${adT('cancel')}</button>
+            <button class="complaint-send">${adT('send')}</button>
           </div>
-          <small>* pateikus skundą reklamos bus laikinai užtildytos 24 valandom. departamentas tai vadina „strateginiu atsitraukimu“.</small>
+          <small>${adT('footnote')}</small>
         </div>
       </div>`;
     document.body.appendChild(modal);
@@ -221,28 +260,62 @@
   const complaintAnger = complaintModal.querySelector('#complaintAnger');
   const complaintMeter = complaintModal.querySelector('#complaintMeter');
 
+  function refreshComplaintText() {
+    complaintModal.querySelector('.gang-complaint-title span').textContent = adT('windowTitle');
+    complaintModal.querySelector('.complaint-stamp').textContent = adT('formStamp');
+    complaintModal.querySelector('h3').textContent = adT('formTitle');
+    complaintModal.querySelector('.complaint-intro').textContent = adT('formIntro');
+    complaintText.placeholder = adT('placeholder');
+    complaintModal.querySelector('.complaint-cancel').textContent = adT('cancel');
+    complaintModal.querySelector('.complaint-paper small').textContent = adT('footnote');
+    const len = complaintText.value.trim().length;
+    const anger = Math.min(100, Math.round(len / 1.6));
+    complaintChars.textContent = adT('chars', {count: len});
+    complaintAnger.textContent = adT('anger', {value: anger});
+    if (isSuppressed()) {
+      const until = new Date(Number(localStorage.getItem(SUPPRESS_KEY))).toLocaleString(document.documentElement.lang || 'lt');
+      complaintStatus.textContent = adT('activeStatus', {case: complaintCase(), until});
+      complaintText.value = adT('activeText');
+      complaintText.readOnly = true;
+      complaintModal.querySelector('.complaint-send').textContent = adT('withdraw');
+      complaintModal.querySelector('.complaint-send').dataset.complaintAction = 'withdraw';
+    } else if (!complaintText.readOnly) {
+      complaintStatus.textContent = len < 12 ? adT('calm') : len < 35 ? adT('heated') : adT('ready');
+      complaintModal.querySelector('.complaint-send').textContent = adT('send');
+      complaintModal.querySelector('.complaint-send').dataset.complaintAction = 'submit';
+    }
+  }
+
+  function refreshAdsLanguage() {
+    updateCart();
+    updateComplaintButton();
+    refreshComplaintText();
+  }
+
   function closeComplaint() {
     complaintModal.hidden = true;
     complaintText.value = '';
-    complaintStatus.textContent = 'STATUSAS: LAUKIAMAS PYKTIS';
+    complaintStatus.textContent = adT('wait');
     complaintStatus.className = 'complaint-status';
-    complaintChars.textContent = '0/420 RAIDŽIŲ';
-    complaintAnger.textContent = 'PYKTIS: 0%';
+    complaintChars.textContent = adT('chars', {count: 0});
+    complaintAnger.textContent = adT('anger', {value: 0});
     complaintMeter.style.width = '0%';
+    complaintModal.querySelector('.complaint-send').textContent = adT('send');
+    complaintModal.querySelector('.complaint-send').dataset.complaintAction = 'submit';
   }
 
   function openComplaint() {
     if (isSuppressed()) {
-      const until = new Date(Number(localStorage.getItem(SUPPRESS_KEY))).toLocaleString('lt-LT');
+      const until = new Date(Number(localStorage.getItem(SUPPRESS_KEY))).toLocaleString(document.documentElement.lang || 'lt');
       complaintModal.hidden = false;
-      complaintStatus.textContent = `SKUNDAS JAU AKTYVUS: ${complaintCase()} | REKLAMOS NUTILDYTOS IKI ${until}`;
+      complaintStatus.textContent = adT('activeStatus', {case: complaintCase(), until});
       complaintStatus.className = 'complaint-status accepted';
-      complaintText.value = 'SKUNDAS PRIIMTAS. REKLAMŲ SKYRIUS DABAR APSIMETA KAD JŪSŲ NĖRA.';
+      complaintText.value = adT('activeText');
       complaintText.readOnly = true;
-      complaintModal.querySelector('.complaint-send').textContent = 'ATSIIMT SKUNDĄ (BLOGA IDEJA)';
+      complaintModal.querySelector('.complaint-send').textContent = adT('withdraw');
+      complaintModal.querySelector('.complaint-send').dataset.complaintAction = 'withdraw';
     } else {
       complaintText.readOnly = false;
-      complaintModal.querySelector('.complaint-send').textContent = 'NU GERAI NU';
       closeComplaint();
       complaintModal.hidden = false;
       setTimeout(() => complaintText.focus(), 60);
@@ -253,7 +326,7 @@
   complaintModal.querySelector('.complaint-x').addEventListener('click', closeComplaint);
   complaintModal.querySelector('.complaint-cancel').addEventListener('click', () => {
     closeComplaint();
-    toast('SKUNDAS ATŠAUKTAS. REKLAMŲ SKYRIUS ATSIDUSO.');
+    toast(adT('cancelToast'));
   });
   complaintModal.addEventListener('click', e => { if (e.target === complaintModal) closeComplaint(); });
 
@@ -264,10 +337,10 @@
     complaintText.setSelectionRange(start, start);
     const len = complaintText.value.trim().length;
     const anger = Math.min(100, Math.round(len / 1.6));
-    complaintChars.textContent = `${len}/420 RAIDŽIŲ`;
-    complaintAnger.textContent = `PYKTIS: ${anger}%`;
+    complaintChars.textContent = adT('chars', {count: len});
+    complaintAnger.textContent = adT('anger', {value: anger});
     complaintMeter.style.width = `${anger}%`;
-    complaintStatus.textContent = len < 12 ? 'STATUSAS: PER RAMUS SKUNDAS' : len < 35 ? 'STATUSAS: JAU JAU PYKSTAT' : 'STATUSAS: BIUROKRATIŠKAI PAKANKAMAI PIKTA';
+    complaintStatus.textContent = len < 12 ? adT('calm') : len < 35 ? adT('heated') : adT('ready');
   });
 
   function makeCaseNo() {
@@ -307,22 +380,23 @@
     });
     openAds = 0;
     updateComplaintButton();
-    complaintStatus.textContent = `SKUNDAS PRIIMTAS: ${caseNo} | REKLAMŲ SKYRIUS LAIKINAI PAŠALINTAS IŠ PATALPŲ`;
+    complaintStatus.textContent = adT('acceptedStatus', {case: caseNo});
     complaintStatus.className = 'complaint-status accepted';
-    complaintText.value = 'AČIŪ UŽ SKUNDĄ. JIS REALIAI NUKELIAVO Į DUOMENŲ BAZĘ. KAŽKAS DABAR GALI JĮ PERSKAITYT.';
+    complaintText.value = adT('acceptedText');
     complaintText.readOnly = true;
-    complaintModal.querySelector('.complaint-send').textContent = 'NU GERAI UŽTENKA';
-    toast(`SKUNDAS ${caseNo} PRIIMTAS. POPUP REKLAMOS IŠVARYTOS 24H.`);
+    complaintModal.querySelector('.complaint-send').textContent = adT('done');
+    complaintModal.querySelector('.complaint-send').dataset.complaintAction = 'done';
+    toast(adT('sentToast', {case: caseNo}));
   }
 
   complaintModal.querySelector('.complaint-send').addEventListener('click', async e => {
     if (isSuppressed()) {
-      if (e.currentTarget.textContent.includes('ATSIIMT')) {
+      if (e.currentTarget.dataset.complaintAction === 'withdraw') {
         localStorage.removeItem(SUPPRESS_KEY);
         localStorage.removeItem(COMPLAINT_KEY);
         updateComplaintButton();
         closeComplaint();
-        toast('SKUNDAS ATSIIMTAS. REKLAMŲ SKYRIUS BĖGA ATGAL Į PATALPAS.');
+        toast(adT('withdrawToast'));
         setTimeout(() => spawnAd(undefined,{force:true}), 1200);
       } else closeComplaint();
       return;
@@ -330,7 +404,7 @@
 
     const text = complaintText.value.trim();
     if (text.length < 12) {
-      complaintStatus.textContent = 'ATMESTA: PER MAŽAI CAPS LOCK. REKLAMŲ SKYRIUS NESIJAUČIA ĮŽEISTAS.';
+      complaintStatus.textContent = adT('rejected');
       complaintStatus.className = 'complaint-status rejected';
       complaintModal.querySelector('.gang-complaint-window').classList.add('complaint-shake');
       setTimeout(() => complaintModal.querySelector('.gang-complaint-window').classList.remove('complaint-shake'), 450);
@@ -340,17 +414,17 @@
     const caseNo = makeCaseNo();
     const sendBtn = e.currentTarget;
     sendBtn.disabled = true;
-    sendBtn.textContent = 'SIUNČIAM Į CENTRINĘ BAZĘ...';
-    complaintStatus.textContent = `STATUSAS: ${caseNo} KELIAUJA PER INTERNETO VAMZDĮ`;
+    sendBtn.textContent = adT('sending');
+    complaintStatus.textContent = adT('traveling', {case: caseNo});
 
     try {
       await submitComplaint(caseNo, text);
       suppressAdsForDay(caseNo);
     } catch (err) {
       console.error('complaint submit failed', err);
-      complaintStatus.textContent = 'KLAIDA: SKUNDŲ SKYRIUS NEPRISIJUNGĖ PRIE CENTRINĖS BAZĖS. BANDYK DAR KARTĄ.';
+      complaintStatus.textContent = adT('error');
       complaintStatus.className = 'complaint-status rejected';
-      sendBtn.textContent = 'NU GERAI NU (DAR KARTĄ)';
+      sendBtn.textContent = adT('retry');
     } finally {
       sendBtn.disabled = false;
     }
@@ -393,5 +467,7 @@
     if (!isSuppressed() && complaintBtn.classList.contains('complaint-active')) updateComplaintButton();
   }, 30000);
 
+  window.addEventListener('oski:languagechange', refreshAdsLanguage);
+  refreshAdsLanguage();
   window.spawnGangAd = spawnAd;
 })();
