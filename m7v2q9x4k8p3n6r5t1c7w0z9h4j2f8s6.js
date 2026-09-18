@@ -52,7 +52,6 @@
   input.addEventListener('keydown',e=>{
     if(e.key==='Enter'){e.preventDefault();check();}
   });
-  input.addEventListener('paste',e=>e.preventDefault());
   input.addEventListener('drop',e=>e.preventDefault());
   input.addEventListener('contextmenu',e=>e.preventDefault());
   input.focus();
