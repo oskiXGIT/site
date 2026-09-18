@@ -8,10 +8,10 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <meta name="referrer" content="no-referrer" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://otyoaqppxycpvpsclqvy.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'; worker-src 'none'; manifest-src 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://otyoaqppxycpvpsclqvy.supabase.co; img-src 'self' data: https://otyoaqppxycpvpsclqvy.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'; worker-src 'none'; manifest-src 'none'" />
   <meta name="theme-color" content="#05070c" />
   <title>vidinis mazgas</title>
-  <link rel="stylesheet" href="admin.css?v=20260918_2030" />
+  <link rel="stylesheet" href="admin.css?v=20260919_0018" />
   <script src="cache-bust.js?v=20260918_2030"></script>
 </head>
 <body>
@@ -57,6 +57,7 @@
         <button class="tab" data-tab="controls">VALDYMAS</button>
         <button class="tab" data-tab="posts">POSTAI</button>
         <button class="tab" data-tab="archives">ARCHYVAI</button>
+        <button class="tab" data-tab="photos">NUOTRAUKOS</button>
         <button class="tab" data-tab="poll">APKLAUSA</button>
         <button class="tab" data-tab="session">SESIJA</button>
       </nav>
@@ -207,6 +208,62 @@
       </section>
 
 
+
+      <section class="tab-panel" id="tab-photos">
+        <div class="panel-title"><b>NUOTRAUKU_ARCHYVO_VALDYMAS.db</b><button id="newPhotoBtn" class="small-btn">NAUJA</button></div>
+        <p class="dim">viesam puslapyje matosi tik publikuotos nuotraukos. faila ikelti gali tik sitas rakto apsaugotas adminas.</p>
+        <div class="photo-admin-layout">
+          <div>
+            <div class="post-admin-toolbar">
+              <span class="dim">STORAGE / METADATA</span>
+              <button id="refreshPhotos" class="small-btn">ATNAUJINT</button>
+            </div>
+            <div id="photosList" class="side-list photo-admin-list"><div class="empty">kraunam nuotraukas...</div></div>
+          </div>
+          <div class="editor photo-editor">
+            <div class="photo-upload-box">
+              <label>FAILAS (NAUJAI NUOTRAUKAI)
+                <input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+              </label>
+              <div class="tiny" id="photoFileHint">MAX 15 MB · JPG / PNG / WEBP / GIF</div>
+              <img id="photoPreview" class="photo-admin-preview-image" alt="preview" hidden />
+            </div>
+            <div class="archive-meta-grid">
+              <input id="photoTakenAt" type="date" />
+              <input id="photoSort" type="number" min="-100000" max="100000" step="1" value="0" placeholder="eile" />
+            </div>
+            <label class="archive-check"><input id="photoPublished" type="checkbox" checked /> RODYTI VIESAM PUSLAPYJE</label>
+            <div class="translation-toolbar">
+              <label>REDAGUOJAMA KALBA
+                <select id="photoTranslationLang">
+                  <option value="lt">LT · LIETUVIŲ</option>
+                  <option value="en">EN · ENGLISH</option>
+                  <option value="fr">FR · FRANÇAIS</option>
+                  <option value="zh">ZH · 中文</option>
+                  <option value="ru">RU · РУССКИЙ</option>
+                  <option value="eo">EO · ESPERANTO</option>
+                  <option value="la">LA · LATINA</option>
+                  <option value="fo">FO · FØROYSKT</option>
+                  <option value="cy">CY · CYMRAEG</option>
+                  <option value="eu">EU · EUSKARA</option>
+                  <option value="br">BR · BREZHONEG</option>
+                </select>
+              </label>
+              <button id="autoTranslatePhotoBtn" class="small-btn" type="button">AUTO VERTIMAI</button>
+              <span id="photoTranslationCount">VERTIMAI 0/11</span>
+            </div>
+            <input id="photoCaption" maxlength="240" placeholder="nuotraukos pavadinimas SITOJ kalboj" />
+            <textarea id="photoNote" maxlength="4000" placeholder="trumpa pastaba SITOJ kalboj (nebūtina)"></textarea>
+            <div class="translation-hint">AUTO VERTIMAI vercia caption + pastaba i visas likusias kalbas. viesam puslapy dar rodoma juokinga vertimo pasitikejimo procentine etikete.</div>
+            <div class="editor-actions">
+              <button id="savePhotoBtn" class="main-btn">IKELT / ISSAUGOT</button>
+              <button id="deletePhotoBtn" class="small-btn danger" disabled>TRINT FOTO</button>
+            </div>
+            <div class="tiny" id="photoState">NAUJA NUOTRAUKA</div>
+          </div>
+        </div>
+      </section>
+
       <section class="tab-panel" id="tab-poll">
         <div class="panel-title"><b>VIESOS_NUOMONES_VALDYMAS.db</b><button id="refreshPoll" class="small-btn">ATNAUJINT</button></div>
         <p class="dim">viena gyva apklausa. pakeitus klausima arba atsakymus seni balsai automatiskai nunulinami.</p>
@@ -249,6 +306,6 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260918_2030"></script>
+  <script src="admin.js?v=20260919_0018"></script>
 </body>
 </html>
