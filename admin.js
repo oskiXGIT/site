@@ -441,7 +441,7 @@
     const btn = $('triggerComplaintSpotlight');
     const state = $('complaintSpotlightState');
     const startsAt = Date.now() + 1500;
-    const expiresAt = startsAt + 2000;
+    const expiresAt = startsAt + 30000;
     const eventId = crypto.randomUUID ? crypto.randomUUID() : `spotlight-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     btn.disabled = true;
