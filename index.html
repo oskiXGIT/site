@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="language-ui.css?v=20260816_0234" />
   <link rel="stylesheet" href="gang.css?v=20260816_0234" />
   <link rel="stylesheet" href="poll.css?v=20260816_0234" />
+  <link rel="stylesheet" href="photos.css?v=20260919_0018" />
   <script src="cache-bust.js?v=20260918_2115"></script>
 </head>
 <body>
@@ -31,6 +32,7 @@
         <button class="nav-btn" data-panel="posts">POSTAI</button>
         <button class="nav-btn" id="pollNav" data-panel="poll">BALSAVIMAS</button>
         <button class="nav-btn" data-panel="archive" data-i18n="nav.archive">ARCHYVAS</button>
+        <button class="nav-btn" id="photosNav" data-panel="photos">NUOTRAUKOS</button>
         <button class="nav-btn" data-panel="files" data-i18n="nav.files">BYLOS</button>
         <button class="nav-btn" data-panel="terminal" data-i18n="nav.terminal">TERMINALAS</button>
         <button class="nav-btn danger" id="dontPress" data-i18n="nav.dont">NESPAUSK CE</button>
@@ -128,6 +130,22 @@
           </div>
         </div>
 
+
+        <div class="window panel-view" id="photos">
+          <div class="window-title"><span id="photosWindowTitle">NUOTRAUKU_ARCHYVAS.db</span><span>□ ×</span></div>
+          <div class="window-body">
+            <div class="photo-archive-head">
+              <div>
+                <div class="feed-title" id="photosHeadline">NUOTRAUKU ARCHYVAS</div>
+                <p class="post-archive-note" id="photosIntro">cia tik perziura. ikelti gali tik zmogus su tikru admin rakto prisijungimu.</p>
+              </div>
+              <div class="photo-confidence" id="photosConfidence">VERTIMU PASITIKIMAS: 97%</div>
+            </div>
+            <div id="photoArchiveStatus" class="photo-archive-status">kraunam fotoaparato nusikaltimus...</div>
+            <div id="photoArchiveGrid" class="photo-archive-grid"></div>
+          </div>
+        </div>
+
         <div class="window panel-view" id="files">
           <div class="window-title"><span>C:\BYLOS\LABAI_SVARBU\</span><span>□ ×</span></div>
           <div class="window-body file-list">
@@ -217,6 +235,7 @@
   <script src="ads.js?v=20260918_2115"></script>
   <script src="posts.js?v=20260816_0234"></script>
   <script src="poll.js?v=20260816_0234"></script>
+  <script src="photos.js?v=20260919_0018"></script>
   <script src="archives.js?v=20260816_0234"></script>
 </body>
 </html>
