@@ -141,6 +141,7 @@ function applyLanguage(lang) {
   deptMeterBar.style.width = `${accuracy}%`;
   languageSelect.value = currentLang;
   refreshNotice();
+  window.dispatchEvent(new CustomEvent('oski:languagechange', {detail: {lang: currentLang}}));
 }
 languageSelect.addEventListener('change', e => applyLanguage(e.target.value));
 
