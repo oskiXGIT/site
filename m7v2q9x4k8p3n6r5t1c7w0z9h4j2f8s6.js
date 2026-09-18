@@ -44,9 +44,12 @@
 
       const auth=await authResponse.json().catch(()=>null);
       if(!authResponse.ok || !auth?.access_token){
-        fail();
+        const reason = auth?.error_description || auth?.msg || auth?.message || auth?.error || `HTTP ${authResponse.status}`;
+        fail(`AUTH KLAIDA: ${reason}`);
         return;
       }
+
+      status.textContent='AUTH OK · KRAUNAM TURINI...';
 
       const contentResponse=await fetch(`${SUPABASE_URL}/rest/v1/secret_link_content?select=title,body&singleton=eq.true&limit=1`,{
         headers:{
@@ -58,7 +61,8 @@
 
       const rows=await contentResponse.json().catch(()=>[]);
       if(!contentResponse.ok || !Array.isArray(rows) || !rows[0]){
-        fail('AUTH PRAEJO, BET TURINYS UZRAKINTAS');
+        const detail = Array.isArray(rows) ? 'RLS NELEIDO / NERASTA EILUTE' : (rows?.message || `HTTP ${contentResponse.status}`);
+        fail(`AUTH PRAEJO, BET TURINYS UZRAKINTAS: ${detail}`);
         return;
       }
 
