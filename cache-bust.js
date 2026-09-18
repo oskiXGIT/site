@@ -1,7 +1,7 @@
 (() => {
   // Every page load gets a fresh asset URL, so browser HTTP caches cannot reuse
   // an older CSS or JavaScript bundle after a site update.
-  const RESET_ID = `1789762924011`;
+  const RESET_ID = String(Date.now());
   const KEY = 'oski_site_cache_reset';
 
   try {
