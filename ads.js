@@ -100,6 +100,90 @@
   updateCart();
   updateComplaintButton();
 
+
+  const SPOTLIGHT_SESSION_KEY = 'oskiComplaintSpotlightEvent';
+  let spotlightOverlay = null;
+  let spotlightStartTimer = null;
+
+  function clearComplaintSpotlight() {
+    if (spotlightStartTimer) clearTimeout(spotlightStartTimer);
+    spotlightStartTimer = null;
+    spotlightOverlay?.remove();
+    spotlightOverlay = null;
+  }
+
+  function showComplaintSpotlight(duration) {
+    clearComplaintSpotlight();
+    const rect = complaintBtn.getBoundingClientRect();
+    if (!rect.width || !rect.height || duration <= 0) return;
+
+    const targetX = rect.left + rect.width / 2;
+    const targetY = rect.top + rect.height / 2;
+    const overlay = document.createElement('div');
+    overlay.className = 'complaint-spotlight-overlay';
+    overlay.setAttribute('aria-hidden', 'true');
+
+    const message = document.createElement('div');
+    message.className = 'complaint-spotlight-message';
+    message.textContent = 'SKUNDO MYGTUKAS CIA';
+    overlay.appendChild(message);
+
+    const positions = [
+      [innerWidth * .12, innerHeight * .14], [innerWidth * .5, innerHeight * .1], [innerWidth * .88, innerHeight * .14],
+      [innerWidth * .08, innerHeight * .5], [innerWidth * .92, innerHeight * .5],
+      [innerWidth * .12, innerHeight * .86], [innerWidth * .5, innerHeight * .9], [innerWidth * .88, innerHeight * .86],
+    ];
+    positions.forEach(([x, y], index) => {
+      const arrow = document.createElement('div');
+      arrow.className = 'complaint-spotlight-arrow';
+      arrow.textContent = '➜';
+      arrow.style.left = `${x}px`;
+      arrow.style.top = `${y}px`;
+      arrow.style.transform = `translate(-50%, -50%) rotate(${Math.atan2(targetY - y, targetX - x) * 180 / Math.PI}deg)`;
+      arrow.style.animationDelay = `${index * -0.07}s`;
+      overlay.appendChild(arrow);
+    });
+
+    const target = document.createElement('div');
+    target.className = 'complaint-spotlight-target';
+    target.style.left = `${targetX}px`;
+    target.style.top = `${targetY}px`;
+    overlay.appendChild(target);
+
+    document.body.appendChild(overlay);
+    spotlightOverlay = overlay;
+    requestAnimationFrame(() => overlay.classList.add('is-visible'));
+    setTimeout(clearComplaintSpotlight, duration);
+  }
+
+  async function pollComplaintSpotlight() {
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/gang_get_complaint_spotlight`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: '{}',
+        cache: 'no-store',
+      });
+      if (!response.ok) return;
+      const signal = (await response.json().catch(() => []))[0];
+      if (!signal?.event_id || sessionStorage.getItem(SPOTLIGHT_SESSION_KEY) === signal.event_id) return;
+
+      const startsAt = Date.parse(signal.starts_at);
+      const expiresAt = Date.parse(signal.expires_at);
+      if (!Number.isFinite(startsAt) || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) return;
+
+      sessionStorage.setItem(SPOTLIGHT_SESSION_KEY, signal.event_id);
+      spotlightStartTimer = setTimeout(() => {
+        showComplaintSpotlight(Math.max(0, expiresAt - Date.now()));
+      }, Math.max(0, startsAt - Date.now()));
+    } catch {
+      // The public page remains fully usable when the optional signal is unavailable.
+    }
+  }
+
+  pollComplaintSpotlight();
+  setInterval(pollComplaintSpotlight, 700);
+
   function toast(msg) {
     const el = document.createElement('div');
     el.className = 'gang-ad-toast';
