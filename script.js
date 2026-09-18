@@ -10,11 +10,15 @@ const deptMeterBar = document.getElementById('deptMeterBar');
 let currentLang = localStorage.getItem('oskiLang') || 'lt';
 
 function showPanel(id) {
-  panels.forEach(p => p.classList.toggle('active', p.id === id));
-  navButtons.forEach(b => b.classList.toggle('active', b.dataset.panel === id));
-  if (id === 'terminal') setTimeout(() => document.getElementById('terminalInput').focus(), 50);
+  const exists = [...panels].some(p => p.id === id);
+  const target = exists ? id : 'home';
+  panels.forEach(p => p.classList.toggle('active', p.id === target));
+  navButtons.forEach(b => b.classList.toggle('active', b.dataset.panel === target));
+  try { localStorage.setItem('oskiActivePanel', target); } catch (_) {}
+  if (target === 'terminal') setTimeout(() => document.getElementById('terminalInput')?.focus(), 50);
 }
 navButtons.forEach(btn => btn.addEventListener('click', () => showPanel(btn.dataset.panel)));
+showPanel(localStorage.getItem('oskiActivePanel') || 'home');
 
 function openPopup(text, title = 'PRANESIMAS') {
   popupTitle.textContent = title;
