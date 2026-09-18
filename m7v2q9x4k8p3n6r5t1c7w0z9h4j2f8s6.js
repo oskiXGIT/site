@@ -1,14 +1,17 @@
 (() => {
   'use strict';
-  const ENDPOINT='https://otyoaqppxycpvpsclqvy.supabase.co/functions/v1/secret-gate';
-  const KEY='sb_publishable_mxledKrN2vE7RmdsYQHNFA__wF3CLE4';
+
+  const SUPABASE_URL='https://otyoaqppxycpvpsclqvy.supabase.co';
+  const SUPABASE_KEY='sb_publishable_mxledKrN2vE7RmdsYQHNFA__wF3CLE4';
+  const INTERNAL_EMAIL='secret.q7m2v9k4r6p3x8n5@oski.website';
+
   const root=document.getElementById('gate');
   const input=document.getElementById('keyInput');
   const status=document.getElementById('status');
   let busy=false;
 
-  function fail(){
-    status.textContent='PRIEIGA ATMESTA';
+  function fail(message='PRIEIGA ATMESTA'){
+    status.textContent=message;
     root.classList.remove('shake');
     void root.offsetWidth;
     root.classList.add('shake');
@@ -16,33 +19,63 @@
     input.focus();
   }
 
-  async function check(){
+  async function openWithAuth(){
     if(busy) return;
-    const value=input.value;
-    if(value.length<16){ fail(); return; }
+    const password=input.value;
+    if(password.length<16){ fail(); return; }
+
     busy=true;
     input.disabled=true;
     status.textContent='TIKRINAMA...';
+
     try{
-      const r=await fetch(ENDPOINT,{
+      const authResponse=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{
         method:'POST',
-        headers:{apikey:KEY,'Content-Type':'application/json'},
-        body:JSON.stringify({key:value}),
+        headers:{
+          apikey:SUPABASE_KEY,
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+          email:INTERNAL_EMAIL,
+          password
+        }),
         cache:'no-store'
       });
-      const data=await r.json().catch(()=>null);
-      if(!r.ok || !data?.ok){ fail(); return; }
+
+      const auth=await authResponse.json().catch(()=>null);
+      if(!authResponse.ok || !auth?.access_token){
+        fail();
+        return;
+      }
+
+      const contentResponse=await fetch(`${SUPABASE_URL}/rest/v1/secret_link_content?select=title,body&singleton=eq.true&limit=1`,{
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:`Bearer ${auth.access_token}`
+        },
+        cache:'no-store'
+      });
+
+      const rows=await contentResponse.json().catch(()=>[]);
+      if(!contentResponse.ok || !Array.isArray(rows) || !rows[0]){
+        fail('AUTH PRAEJO, BET TURINYS UZRAKINTAS');
+        return;
+      }
+
       const inside=document.createElement('section');
       inside.className='inside';
+
       const h=document.createElement('h1');
-      h.textContent=data.content?.title||'PRIEIGA SUTEIKTA';
+      h.textContent=rows[0].title||'PRIEIGA SUTEIKTA';
+
       const b=document.createElement('div');
-      b.textContent=data.content?.body||'';
+      b.textContent=rows[0].body||'';
+
       inside.append(h,b);
       root.replaceChildren(inside);
       document.title='.';
     }catch{
-      fail();
+      fail('RYŠYS NUMIRĖ. BANDYK DAR KARTĄ.');
     }finally{
       busy=false;
       if(document.body.contains(input)) input.disabled=false;
@@ -50,9 +83,11 @@
   }
 
   input.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){e.preventDefault();check();}
+    if(e.key==='Enter'){
+      e.preventDefault();
+      openWithAuth();
+    }
   });
-  input.addEventListener('drop',e=>e.preventDefault());
-  input.addEventListener('contextmenu',e=>e.preventDefault());
+
   input.focus();
 })();
