@@ -1,5 +1,5 @@
 (() => {
-  const BUILD = '20260816_0234';
+  const BUILD = '20260918_1730';
   const KEY = 'oski_site_build';
   let previous = null;
 
