@@ -24,6 +24,12 @@
   let cachedPosts = [];
   let editingArchiveId = null;
   let cachedArchives = [];
+  let editingPhotoId = null;
+  let cachedPhotos = [];
+  let photoLang = 'lt';
+  let photoCaptionMap = {};
+  let photoNoteMap = {};
+  const PHOTO_BUCKET = 'gang-photo-archive';
 
   function setLoginStatus(text, kind = '') {
     loginStatus.textContent = text;
@@ -148,7 +154,7 @@
     dashboardView.hidden = false;
     if (sessionUid) sessionUid.textContent = session?.user?.id ? `${session.user.id.slice(0, 8)}…` : '-';
     setGlobalStatus('AUTH OK / ADMIN OK / MEMORY ONLY');
-    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts(), loadArchives(), loadPollAdmin()]);
+    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts(), loadArchives(), loadPhotos(), loadPollAdmin()]);
   }
 
   async function handleLogin() {
@@ -863,7 +869,325 @@
   $('autoTranslateArchiveBtn')?.addEventListener('click', autoTranslateArchive);
   $('archiveSummary')?.addEventListener('input', commitArchiveLanguage);
   $('archiveBody')?.addEventListener('input', commitArchiveLanguage);
+  $('photoTranslationLang')?.addEventListener('change', switchPhotoLanguage);
+  $('autoTranslatePhotoBtn')?.addEventListener('click', autoTranslatePhoto);
+  $('photoCaption')?.addEventListener('input', commitPhotoLanguage);
+  $('photoNote')?.addEventListener('input', commitPhotoLanguage);
+  $('photoFile')?.addEventListener('change', previewSelectedPhoto);
 
+
+
+  function photoPublicUrl(path) {
+    return `${SUPABASE_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${String(path).split('/').map(encodeURIComponent).join('/')}`;
+  }
+
+  function photoObjectPath(path) {
+    return String(path).split('/').map(encodeURIComponent).join('/');
+  }
+
+  async function storageUpload(file, path) {
+    if (!session?.access_token) throw new Error('NO_SESSION');
+    const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${PHOTO_BUCKET}/${photoObjectPath(path)}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': file.type || 'application/octet-stream',
+        'x-upsert': 'false',
+        'cache-control': '3600',
+      },
+      body: file,
+    });
+    if (response.status === 401 || response.status === 403) lockPanel('STORAGE SESIJA ATMESTA. REIK RAKTO.');
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new Error(`UPLOAD_${response.status}${detail ? ':' + detail.slice(0, 80) : ''}`);
+    }
+    return response;
+  }
+
+  async function storageDelete(path) {
+    if (!session?.access_token || !path) return false;
+    const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${PHOTO_BUCKET}`, {
+      method: 'DELETE',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prefixes: [path] }),
+    });
+    if (response.status === 401 || response.status === 403) lockPanel('STORAGE SESIJA ATMESTA. REIK RAKTO.');
+    return response.ok;
+  }
+
+  function updatePhotoTranslationCount() {
+    const el = $('photoTranslationCount');
+    if (el) el.textContent = `VERTIMAI ${countTranslations(photoCaptionMap, photoNoteMap)}/${CONTENT_LANGS.length}`;
+  }
+
+  function commitPhotoLanguage() {
+    if (!CONTENT_LANGS.includes(photoLang)) return;
+    photoCaptionMap[photoLang] = $('photoCaption')?.value || '';
+    photoNoteMap[photoLang] = $('photoNote')?.value || '';
+    updatePhotoTranslationCount();
+  }
+
+  function loadPhotoLanguage(code) {
+    photoLang = CONTENT_LANGS.includes(code) ? code : 'lt';
+    if ($('photoTranslationLang')) $('photoTranslationLang').value = photoLang;
+    if ($('photoCaption')) $('photoCaption').value = photoCaptionMap[photoLang] || '';
+    if ($('photoNote')) $('photoNote').value = photoNoteMap[photoLang] || '';
+    updatePhotoTranslationCount();
+  }
+
+  function switchPhotoLanguage() {
+    commitPhotoLanguage();
+    loadPhotoLanguage($('photoTranslationLang')?.value || 'lt');
+  }
+
+  async function autoTranslatePhoto() {
+    commitPhotoLanguage();
+    const sourceTitle = photoCaptionMap[photoLang] || '';
+    const sourceBody = photoNoteMap[photoLang] || '';
+    if (!sourceTitle.trim() && !sourceBody.trim()) {
+      $('photoState').textContent = 'PIRMA PARASYK CAPTION AR PASTABA SITOJ KALBOJ';
+      return;
+    }
+    const btn = $('autoTranslatePhotoBtn');
+    if (btn) btn.disabled = true;
+    $('photoState').textContent = `VERTIMU DEPARTAMENTAS ZIURI I TEKSTA (${photoLang.toUpperCase()})...`;
+    try {
+      const translations = await requestAutoTranslations('photo', photoLang, sourceTitle, sourceBody);
+      Object.entries(translations).forEach(([code, value]) => {
+        if (!CONTENT_LANGS.includes(code) || code === photoLang || !value || typeof value !== 'object') return;
+        photoCaptionMap[code] = typeof value.title === 'string' ? value.title : '';
+        photoNoteMap[code] = typeof value.body === 'string' ? value.body : '';
+      });
+      loadPhotoLanguage(photoLang);
+      $('photoState').textContent = `AUTO VERTIMAI PARUOSTI · ${countTranslations(photoCaptionMap, photoNoteMap)}/${CONTENT_LANGS.length} · PASITIKEJIMO PROCENTAI VIESAM PUSLAPYJE VIS TIEK ABEJOTINI`;
+    } catch (error) {
+      const code = error?.code || '';
+      if (code === 'OPENAI_API_KEY_MISSING') $('photoState').textContent = 'TRUKSTA OPENAI_API_KEY SUPABASE SECRET';
+      else if (code === 'SOURCE_TOO_LONG') $('photoState').textContent = 'TEKSTAS PER ILGAS AUTO VERTIMUI';
+      else if (code === 'ADMIN_ONLY') $('photoState').textContent = 'VERTIMU DEPARTAMENTAS TAVES NEPAZINO';
+      else $('photoState').textContent = `AUTO VERTIMAI NEPAVYKO (${code || '???'})`;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function clearPhotoFilePreview() {
+    const input = $('photoFile');
+    const preview = $('photoPreview');
+    if (input) input.value = '';
+    if (preview) {
+      preview.removeAttribute('src');
+      preview.hidden = true;
+    }
+  }
+
+  function previewSelectedPhoto() {
+    const file = $('photoFile')?.files?.[0];
+    const preview = $('photoPreview');
+    if (!file || !preview) return;
+    if (!file.type.startsWith('image/')) {
+      $('photoState').textContent = 'SITAS FAILAS NEATRODO KAIP NUOTRAUKA';
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    preview.hidden = false;
+    preview.onload = () => URL.revokeObjectURL(url);
+    $('photoFileHint').textContent = `${file.name} · ${Math.max(1, Math.round(file.size / 1024))} KB`;
+  }
+
+  async function loadPhotos() {
+    if (!$('photosList') || !session) return;
+    const response = await api('/rest/v1/gang_photos?select=id,storage_path,original_name,mime_type,file_size,caption_i18n,note_i18n,taken_at,sort_order,published,created_at,updated_at&order=sort_order.asc,created_at.desc');
+    if (!response.ok) throw new Error(`HTTP_${response.status}`);
+    cachedPhotos = await response.json();
+    renderPhotos();
+  }
+
+  function renderPhotos() {
+    const list = $('photosList');
+    if (!list) return;
+    list.replaceChildren();
+    if (!cachedPhotos.length) {
+      list.append(Object.assign(document.createElement('div'), { className: 'empty', textContent: 'nuotrauku dar nera. kamera nekalta.' }));
+      return;
+    }
+    cachedPhotos.forEach((photo) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = `note-row photo-admin-row${editingPhotoId === photo.id ? ' active' : ''}`;
+      const img = document.createElement('img');
+      img.src = photoPublicUrl(photo.storage_path);
+      img.alt = '';
+      const copy = document.createElement('div');
+      copy.className = 'photo-admin-copy';
+      const title = document.createElement('b');
+      title.textContent = `${photo.published ? '🌐' : '🔒'} ${mapFallback(photo.caption_i18n, photo.original_name) || '[be caption]'}`;
+      const meta = document.createElement('small');
+      meta.textContent = `VERT ${countTranslations(photo.caption_i18n, photo.note_i18n)}/${CONTENT_LANGS.length} · EILE ${photo.sort_order} · ${Math.max(1, Math.round(Number(photo.file_size || 0) / 1024))} KB`;
+      copy.append(title, meta);
+      row.append(img, copy);
+      row.addEventListener('click', () => openPhoto(photo.id));
+      list.append(row);
+    });
+  }
+
+  function newPhoto() {
+    editingPhotoId = null;
+    photoCaptionMap = {};
+    photoNoteMap = {};
+    photoLang = 'lt';
+    $('photoTakenAt').value = '';
+    const maxSort = cachedPhotos.reduce((max, item) => Math.max(max, Number(item.sort_order) || 0), 0);
+    $('photoSort').value = String(maxSort + 10);
+    $('photoPublished').checked = true;
+    $('deletePhotoBtn').disabled = true;
+    $('photoFile').disabled = false;
+    $('photoFileHint').textContent = 'MAX 15 MB · JPG / PNG / WEBP / GIF';
+    clearPhotoFilePreview();
+    loadPhotoLanguage('lt');
+    $('photoState').textContent = 'NAUJA NUOTRAUKA · PASIRINK FAILA';
+    renderPhotos();
+  }
+
+  function openPhoto(id, preferredLang = photoLang) {
+    const photo = cachedPhotos.find((item) => item.id === id);
+    if (!photo) return;
+    editingPhotoId = photo.id;
+    photoCaptionMap = cloneMap(photo.caption_i18n);
+    photoNoteMap = cloneMap(photo.note_i18n);
+    $('photoTakenAt').value = photo.taken_at || '';
+    $('photoSort').value = String(photo.sort_order || 0);
+    $('photoPublished').checked = Boolean(photo.published);
+    $('deletePhotoBtn').disabled = false;
+    $('photoFile').disabled = true;
+    $('photoFileHint').textContent = `FAILAS JAU IKELTAS: ${photo.original_name} · naujam failui spausk NAUJA`;
+    const preview = $('photoPreview');
+    preview.src = photoPublicUrl(photo.storage_path);
+    preview.hidden = false;
+    loadPhotoLanguage(preferredLang);
+    $('photoState').textContent = `${photo.published ? 'VIESA' : 'NEVIESA'} · ${String(photo.id).slice(0, 8)}…`;
+    renderPhotos();
+  }
+
+  function sanitizePhotoName(name) {
+    const raw = String(name || 'photo.jpg').toLowerCase();
+    const ext = raw.includes('.') ? raw.split('.').pop().replace(/[^a-z0-9]/g, '').slice(0, 5) : 'jpg';
+    const safeExt = ['jpg','jpeg','png','webp','gif'].includes(ext) ? ext : 'jpg';
+    const base = raw.replace(/\.[^.]+$/, '').replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'photo';
+    const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return `${new Date().toISOString().slice(0,10)}/${id}-${base}.${safeExt}`;
+  }
+
+  async function savePhoto() {
+    commitPhotoLanguage();
+    const caption = mapFallback(photoCaptionMap, '');
+    if (!caption.trim()) {
+      $('photoState').textContent = 'REIKIA CAPTION BENT VIENOJ KALBOJ';
+      return;
+    }
+    const common = {
+      caption_i18n: photoCaptionMap,
+      note_i18n: photoNoteMap,
+      taken_at: $('photoTakenAt').value || null,
+      sort_order: Number.parseInt($('photoSort').value || '0', 10) || 0,
+      published: $('photoPublished').checked,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (editingPhotoId) {
+      $('photoState').textContent = 'SAUGOMI FOTO METADUOMENYS...';
+      const response = await api(`/rest/v1/gang_photos?id=eq.${encodeURIComponent(editingPhotoId)}`, {
+        method: 'PATCH',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify(common),
+      });
+      if (!response.ok) {
+        if (session) $('photoState').textContent = `NEISSISAUGOJO (${response.status})`;
+        return;
+      }
+      const keepLang = photoLang;
+      await loadPhotos();
+      openPhoto(editingPhotoId, keepLang);
+      $('photoState').textContent = 'METADUOMENYS ISSAUGOTI / FOTO LIKO TEN PAT';
+      return;
+    }
+
+    const file = $('photoFile')?.files?.[0];
+    const allowed = new Set(['image/jpeg','image/png','image/webp','image/gif']);
+    if (!file) {
+      $('photoState').textContent = 'PASIRINK NUOTRAUKOS FAILA';
+      return;
+    }
+    if (!allowed.has(file.type)) {
+      $('photoState').textContent = 'LEIDZIAMI TIK JPG / PNG / WEBP / GIF';
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      $('photoState').textContent = 'FAILAS PER STORAS. MAX 15 MB.';
+      return;
+    }
+
+    const path = sanitizePhotoName(file.name);
+    $('savePhotoBtn').disabled = true;
+    $('photoState').textContent = 'KELIAM FAILA I UZRAKINTA STORAGE VAMZDI...';
+    try {
+      await storageUpload(file, path);
+      const payload = {
+        ...common,
+        storage_path: path,
+        original_name: file.name.slice(0, 240),
+        mime_type: file.type,
+        file_size: file.size,
+      };
+      const response = await api('/rest/v1/gang_photos', {
+        method: 'POST',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        await storageDelete(path).catch(() => false);
+        throw new Error(`DB_${response.status}`);
+      }
+      const data = await response.json().catch(() => []);
+      await loadPhotos();
+      if (data[0]?.id) openPhoto(data[0].id, photoLang);
+      $('photoState').textContent = 'NUOTRAUKA IKELTA. VIESAS TABAS JAU GALI JA PAMATYT.';
+      setGlobalStatus('NUOTRAUKA IKELTA I ARCHYVA');
+    } catch (error) {
+      if (session) $('photoState').textContent = `IKELIMAS NEPAVYKO (${error.message})`;
+    } finally {
+      $('savePhotoBtn').disabled = false;
+    }
+  }
+
+  async function deletePhoto() {
+    const photo = cachedPhotos.find((item) => item.id === editingPhotoId);
+    if (!photo || !confirm('Tikrai istrint nuotrauka IR jos faila?')) return;
+    $('photoState').textContent = 'TRINAM FAILA IS STORAGE...';
+    const removed = await storageDelete(photo.storage_path).catch(() => false);
+    if (!removed) {
+      if (session) $('photoState').textContent = 'STORAGE FAILO ISTRINT NEPAVYKO. METADUOMENU NELIECIAM.';
+      return;
+    }
+    const response = await api(`/rest/v1/gang_photos?id=eq.${encodeURIComponent(photo.id)}`, {
+      method: 'DELETE',
+      headers: { Prefer: 'return=minimal' },
+    });
+    if (!response.ok) {
+      if (session) $('photoState').textContent = 'FAILAS ISTRINTAS, BET DB EILUTE UZSISPYRE. REIK ADMIN REMONTO.';
+      return;
+    }
+    await loadPhotos();
+    newPhoto();
+    $('photoState').textContent = 'NUOTRAUKA ISTRINTA VISISKAI';
+  }
 
   let adminPollData = null;
 
@@ -1047,6 +1371,10 @@
   $('publishArchiveBtn')?.addEventListener('click', () => saveArchive(true));
   $('unpublishArchiveBtn')?.addEventListener('click', unpublishArchive);
   $('deleteArchiveBtn')?.addEventListener('click', deleteArchive);
+  $('refreshPhotos')?.addEventListener('click', loadPhotos);
+  $('newPhotoBtn')?.addEventListener('click', newPhoto);
+  $('savePhotoBtn')?.addEventListener('click', savePhoto);
+  $('deletePhotoBtn')?.addEventListener('click', deletePhoto);
   $('refreshPoll')?.addEventListener('click', loadPollAdmin);
   $('pollAddOption')?.addEventListener('click', addPollAdminOption);
   $('savePollBtn')?.addEventListener('click', () => savePollAdmin(false));
