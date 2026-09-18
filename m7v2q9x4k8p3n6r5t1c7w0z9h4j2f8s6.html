@@ -6,6 +6,8 @@
   <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>404</title>
   <style>
     html,body{height:100%;margin:0;background:#05070c;color:#cfd8e6;font-family:"Courier New",monospace}
@@ -13,22 +15,138 @@
     .gate{width:min(680px,90vw);padding:24px;border:1px solid #28344b;background:#080d14;box-shadow:12px 14px 0 #000}
     .line{font-size:12px;opacity:.75;margin-bottom:14px}
     input{box-sizing:border-box;width:100%;padding:12px 10px;border:0;border-bottom:1px solid #50617d;outline:none;background:#05070c;color:#e7eefb;font:700 16px/1 "Courier New",monospace;letter-spacing:.08em}
-    .status{min-height:18px;margin-top:10px;font-size:11px;opacity:.75}
-    .inside{white-space:pre-wrap;line-height:1.5}.inside h1{font-size:18px;margin:0 0 14px}
-    .shake{animation:shake .18s linear 2}@keyframes shake{25%{transform:translateX(5px)}75%{transform:translateX(-5px)}}
+    input:focus{border-bottom-color:#9fb6da}
+    .status{min-height:18px;margin-top:10px;font-size:11px;opacity:.85;word-break:break-word}
+    .inside{white-space:pre-wrap;line-height:1.5}
+    .inside h1{font-size:18px;margin:0 0 14px}
+    .shake{animation:shake .18s linear 2}
+    @keyframes shake{25%{transform:translateX(5px)}75%{transform:translateX(-5px)}}
   </style>
 </head>
 <body>
   <main class="gate" id="gate">
     <div class="line">PRIVATE ACCESS NODE / INPUT REQUIRED</div>
-    <input id="keyInput" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Prieigos raktas">
-    <div class="status" id="status">ENTER = TIKRINTI</div>
+    <form id="keyForm" autocomplete="off">
+      <input id="keyInput" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Prieigos raktas">
+    </form>
+    <div class="status" id="status">AUTH READY · PASTE / RASYK RAKTA · ENTER</div>
   </main>
+
   <script>
-    document.getElementById('keyInput').addEventListener('paste', function (event) {
-      event.stopImmediatePropagation();
-    }, true);
+  (() => {
+    'use strict';
+
+    const SUPABASE_URL='https://otyoaqppxycpvpsclqvy.supabase.co';
+    const SUPABASE_KEY='sb_publishable_mxledKrN2vE7RmdsYQHNFA__wF3CLE4';
+    const INTERNAL_EMAIL='secret.q7m2v9k4r6p3x8n5@oski.website';
+
+    const root=document.getElementById('gate');
+    const form=document.getElementById('keyForm');
+    const input=document.getElementById('keyInput');
+    const status=document.getElementById('status');
+    let busy=false;
+
+    function fail(message){
+      status.textContent=message || 'PRIEIGA ATMESTA';
+      root.classList.remove('shake');
+      void root.offsetWidth;
+      root.classList.add('shake');
+      input.disabled=false;
+      input.select();
+      input.focus();
+    }
+
+    async function openWithAuth(){
+      if(busy) return;
+
+      const password=input.value;
+      if(!password){
+        fail('RAKTAS TUSCIAS');
+        return;
+      }
+
+      busy=true;
+      input.disabled=true;
+      status.textContent='AUTH: TIKRINAMA...';
+
+      try{
+        const authResponse=await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password',{
+          method:'POST',
+          headers:{
+            apikey:SUPABASE_KEY,
+            'Content-Type':'application/json'
+          },
+          body:JSON.stringify({
+            email:INTERNAL_EMAIL,
+            password:password
+          }),
+          cache:'no-store'
+        });
+
+        const auth=await authResponse.json().catch(()=>null);
+
+        if(!authResponse.ok || !auth || !auth.access_token){
+          const reason=(auth && (auth.error_description || auth.msg || auth.message || auth.error)) || ('HTTP ' + authResponse.status);
+          fail('AUTH KLAIDA: ' + reason);
+          return;
+        }
+
+        status.textContent='AUTH OK · KRAUNAM TURINI...';
+
+        const contentResponse=await fetch(SUPABASE_URL + '/rest/v1/secret_link_content?select=title,body&singleton=eq.true&limit=1',{
+          headers:{
+            apikey:SUPABASE_KEY,
+            Authorization:'Bearer ' + auth.access_token
+          },
+          cache:'no-store'
+        });
+
+        const rows=await contentResponse.json().catch(()=>null);
+
+        if(!contentResponse.ok || !Array.isArray(rows) || !rows[0]){
+          const reason=(rows && rows.message) || ('HTTP ' + contentResponse.status + ' / RLS');
+          fail('AUTH PRAEJO, BET TURINYS UZRAKINTAS: ' + reason);
+          return;
+        }
+
+        const inside=document.createElement('section');
+        inside.className='inside';
+
+        const title=document.createElement('h1');
+        title.textContent=rows[0].title || 'PRIEIGA SUTEIKTA';
+
+        const body=document.createElement('div');
+        body.textContent=rows[0].body || '';
+
+        inside.append(title,body);
+        root.replaceChildren(inside);
+        document.title='.';
+      }catch(error){
+        fail('RYŠIO KLAIDA: ' + (error && error.message ? error.message : 'UNKNOWN'));
+      }finally{
+        busy=false;
+        if(document.body.contains(input)) input.disabled=false;
+      }
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      openWithAuth();
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if(event.key === 'Enter' || event.keyCode === 13){
+        event.preventDefault();
+        openWithAuth();
+      }
+    });
+
+    input.addEventListener('paste', () => {
+      status.textContent='RAKTAS IKLIJUOTAS · SPAUSK ENTER';
+    });
+
+    input.focus();
+  })();
   </script>
-  <script src="m7v2q9x4k8p3n6r5t1c7w0z9h4j2f8s6.js?v=20260919_1805"></script>
 </body>
 </html>
