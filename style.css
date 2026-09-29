@@ -140,3 +140,11 @@ body.alert-mode { animation: microshake .12s linear 6; }
 /* PUBLIC_POST_ARCHIVE */
 .public-post-archive { display: grid; gap: 10px; margin-top: 12px; }
 .post-archive-note { margin: 0 0 12px; padding: 8px 10px; border: 1px dashed rgba(255,255,255,.2); opacity: .72; font-size: 12px; line-height: 1.45; }
+
+/* Independent app entry, deliberately distinct from the main site navigation. */
+.lazer-side-link{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:min(100%,430px);margin:22px 0 32px;padding:16px 20px;border:1px solid #e97345;border-radius:12px;background:linear-gradient(110deg,#291512,#140d0d);box-shadow:0 8px 30px #ec54201f;color:#fff1e9;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.lazer-side-link:hover{transform:translateY(-2px);box-shadow:0 12px 40px #ec542044}
+.lazer-side-link span{font:700 11px ui-monospace,monospace;letter-spacing:.1em;color:#ff946b}
+.lazer-side-link strong{font:900 25px Arial,sans-serif;letter-spacing:-.04em}
+.lazer-side-link small{color:#d7a994;font-size:12px}
+
