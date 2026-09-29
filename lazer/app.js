@@ -3,6 +3,7 @@
   const URL_BASE = 'https://otyoaqppxycpvpsclqvy.supabase.co';
   const KEY = 'sb_publishable_mxledKrN2vE7RmdsYQHNFA__wF3CLE4';
   const SESSION_KEY = 'lazer_guest_session_v1';
+  const LOCAL_KEY = 'lazer_local_rounds_v1';
   const BUCKET = 'lazer-private';
   const VIDEO = 'KPdcqHFnyT8';
   const $ = id => document.getElementById(id);
@@ -43,6 +44,7 @@
     return response;
   }
   async function connect() {
+    try {entries=JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]');} catch {entries=[];}
     render();
     try {
       const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
@@ -53,10 +55,17 @@
         if(!response.ok||!(data.session?.access_token||data.access_token)) throw Error(data.msg||data.message||'Private saving is unavailable right now.');
         keepSession(data);
       }
+      const local=[...entries];
       await refresh();
+      const unsynced=[];
+      for(const entry of local) {
+        try {await saveEntry(entry.kind,entry.title,entry.data);} catch {unsynced.push(entry);}
+      }
+      if(unsynced.length){entries.push(...unsynced);localStorage.setItem(LOCAL_KEY,JSON.stringify(unsynced));render();}
+      else if(local.length) localStorage.removeItem(LOCAL_KEY);
       await touch();
       $('saveState').textContent='Private saves on this device';
-    } catch(e) { $('saveState').textContent='Lessons open · private saving unavailable'; status(e.message||'Private saving is unavailable.',true); }
+    } catch(e) { $('saveState').textContent='Lessons open · rounds saved on this device'; status('Cloud saves are unavailable. Speaking and writing rounds can still save on this device; clip uploads need a private connection.',true); }
   }
   async function touch() {
     if(!auth)return;
@@ -67,6 +76,12 @@
     entries=await response.json(); render();
   }
   async function saveEntry(kind,title,data={},objectPath=null) {
+    if(!auth && !objectPath) {
+      const saved={id:crypto.randomUUID(),kind,title,data,object_path:null,created_at:new Date().toISOString()};
+      entries.unshift(saved);
+      localStorage.setItem(LOCAL_KEY,JSON.stringify(entries.slice(0,100)));
+      render();return saved;
+    }
     const response=await call('/rest/v1/lazer_entries',{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({owner:auth.userId,kind,title,data,object_path:objectPath})});
     const saved=await response.json(); entries.unshift(saved[0]); render(); return saved[0];
   }
@@ -114,6 +129,7 @@
   }
   function stopRecorder(){if(recorder?.state==='recording'){recorder.onstop=null;recorder.stop();}clearTimeout(recordingTimer);stream?.getTracks().forEach(t=>t.stop());stream=null;recorder=null;recorded=null;if(recordUrl){URL.revokeObjectURL(recordUrl);recordUrl=null;}}
   async function upload(file,kind,title,data) {
+    if(!auth) throw Error('Private uploads need a connection. The lessons still work without one.');
     if(file.size>30*1024*1024) throw Error('Choose a file under 30 MB.');
     const ext=(file.type.includes('quicktime')?'mov':file.type.includes('mp4')?'mp4':file.type.includes('wav')?'wav':file.type.includes('mpeg')?'mp3':file.type.includes('ogg')?'ogg':file.type.includes('m4a')?'m4a':'webm');
     const path=`${auth.userId}/${crypto.randomUUID()}.${ext}`;
