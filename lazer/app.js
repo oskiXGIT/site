@@ -109,7 +109,7 @@
   async function saveTake() {
     if(!recorded||!currentSpeech)return;
     const button=$('saveTake');button.disabled=true;
-    try {const s=currentSpeech;await upload(recorded,'speech_take','Take · '+s.title,{lessonId:s.id,prompt:s.prompt});recorded=null;savedTake=true;button.textContent='Saved ✓';status('Take saved privately. Finish whenever you are ready.');$('finishSpeech').textContent='Finish level →';}
+    try {const s=currentSpeech,note=$('speechNote').value;await upload(recorded,'speech_take','Take · '+s.title,{lessonId:s.id,prompt:s.prompt});recorded=null;savedTake=true;$('speechNote').value=note;status('Take saved privately. Finish whenever you are ready.');$('finishSpeech').textContent='Finish level →';}
     catch(e){status(e.message,true);button.disabled=false;}
   }
   async function playPrivate(path,container,mime='audio/webm') {
