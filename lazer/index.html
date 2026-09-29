@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src https://otyoaqppxycpvpsclqvy.supabase.co; img-src 'self' data:; media-src 'self' blob: https://otyoaqppxycpvpsclqvy.supabase.co; frame-src https://www.youtube.com https://www.youtube-nocookie.com; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta name="theme-color" content="#100a09">
+  <title>LAZER LAB · Your voice, your words</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="ember" aria-hidden="true"></div>
+  <main id="login" class="lock-screen">
+    <div class="lock-card">
+      <div class="brand"><span class="mark">✳</span> LAZER <b>LAB</b></div>
+      <span class="kicker">PRIVATE SIDE PROJECT</span>
+      <h1>Find the feel.<br><em>Keep your voice.</em></h1>
+      <p>Short speaking and texting lessons. Your clips, recordings and writing stay behind your site’s admin login.</p>
+      <label for="password">Admin access key</label>
+      <div class="login-row"><input id="password" type="password" autocomplete="current-password"><button id="signIn" class="primary">Enter ↗</button></div>
+      <p id="loginStatus" class="status" role="status">Your session stays in this tab’s memory. Sign in again after closing it.</p>
+      <a href="/">← Back to oski.website</a>
+    </div>
+  </main>
+
+  <div id="app" hidden>
+    <header class="header">
+      <button id="home" class="brand" aria-label="Go to Speak"><span class="mark">✳</span> LAZER <b>LAB</b></button>
+      <nav class="nav" aria-label="Main navigation">
+        <button data-tab="speak" class="active"><span class="nav-icon">◉</span> Speak</button>
+        <button data-tab="text"><span class="nav-icon">✎</span> Text</button>
+        <button data-tab="clips"><span class="nav-icon">▣</span> Clips</button>
+        <button data-tab="history"><span class="nav-icon">▤</span> History</button>
+      </nav>
+      <button id="signOut" class="quiet">Sign out</button>
+    </header>
+    <div id="notice" class="notice" role="status" hidden></div>
+
+    <section id="speak" class="page active" aria-labelledby="speakTitle">
+      <div class="intro"><span class="kicker">SPEAK · 5 MINUTES</span><h1 id="speakTitle">Hear it. Try it. <em>Make it yours.</em></h1><p>One small change per round. The point is to carry it into your own words, without putting on somebody else’s voice.</p></div>
+      <div id="speechPath" class="path"></div>
+      <section id="speechLesson" class="lesson" hidden></section>
+      <p class="footnote">Interview segments stream from YouTube after you choose to load them. YouTube receives playback data. The embedded player may be unavailable in some browsers; use the timestamped link. A segment is one example, not a rule about Southern speech or AAE.</p>
+    </section>
+
+    <section id="text" class="page" aria-labelledby="textTitle">
+      <div class="intro"><span class="kicker">TEXT · YOUR WORDS</span><h1 id="textTitle">Make it readable. <em>Make it yours.</em></h1><p>Notice a move, then write an original reply. Selective spelling and short phrasing can be playful; forcing every word makes the message harder to understand.</p></div>
+      <div class="text-grid">
+        <div>
+          <div id="textPath" class="path"></div>
+          <section id="textLesson" class="lesson" hidden></section>
+        </div>
+        <aside class="shelf">
+          <span class="kicker">SOURCE SHELF</span><h2>Actual writing signals, limited evidence.</h2>
+          <p>Official release titles include <a href="https://music.apple.com/us/album/injoy/1734066796" target="_blank" rel="noopener noreferrer">“Injoy,” “injoyable,” “Awsum,” and “mini sto” ↗</a>. These are titles, not private texts or proof of a general spelling rule.</p>
+          <p>A <a href="https://www.dazeddigital.com/life-culture/article/68773/1/algospeak-and-performing-for-the-algorithmic-imaginary" target="_blank" rel="noopener noreferrer">published discussion ↗</a> connects “fineshyt” to his videos. That is reported usage, not an authored message sample.</p>
+          <details><summary>Add a real text example</summary><p>Paste a short public caption or a message you have permission to use. Label where it came from. It stays private here.</p><label for="textSource">Source label</label><input id="textSource" maxlength="100" placeholder="Post, date, screenshot note…"><label for="textUrl">Public link, optional</label><input id="textUrl" type="url" placeholder="https://…"><label for="textExample">Exact short excerpt</label><textarea id="textExample" maxlength="500" rows="3"></textarea><button id="saveTextSource" class="secondary">Save example</button></details>
+          <div id="ownTexts"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="clips" class="page" aria-labelledby="clipsTitle">
+      <div class="intro"><span class="kicker">YOUR PRIVATE REFERENCES</span><h1 id="clipsTitle">Bring a moment <em>you trust.</em></h1><p>Use one speaker and a short conversational clip. You can practice from it without recording yourself.</p></div>
+      <div class="upload lesson"><label for="clipFile">Audio or video · max 30 MB</label><input id="clipFile" type="file" accept="audio/*,video/mp4,video/webm,video/quicktime"><label for="clipTitle">Name this moment</label><input id="clipTitle" maxlength="160" placeholder="Interview · short answer"><label for="clipNote">What do you hear? (optional)</label><textarea id="clipNote" maxlength="500" rows="3" placeholder="One detail, your own words. If unsure, say so."></textarea><button id="uploadClip" class="primary">Save private clip</button><p class="footnote">Only submit clips you are allowed to use. Files are stored in a private Supabase bucket; the original is never published to the public site.</p></div>
+      <div id="clipList" class="card-list"></div>
+    </section>
+
+    <section id="history" class="page" aria-labelledby="historyTitle">
+      <div class="intro"><span class="kicker">YOUR PROGRESS</span><h1 id="historyTitle">What carried <em>over?</em></h1><p>Rounds and saved takes are practice evidence, not an accent score. A good sign is using a small habit in fresh words while feeling at ease.</p></div>
+      <div id="historyList" class="card-list"></div>
+      <p class="footnote">Manage every saved entry and its audio from the real <a href="/admin.html">/admin panel ↗</a>. Deletion controls are in its LAZER LAB tab.</p>
+    </section>
+    <footer><span>Small changes. Your own voice.</span><span>Private to the admin account · <a href="/">Back to main site ↗</a></span></footer>
+  </div>
+</body>
+</html>
