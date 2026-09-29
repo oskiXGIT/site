@@ -65,7 +65,8 @@
       else if(local.length) localStorage.removeItem(LOCAL_KEY);
       await touch();
       $('saveState').textContent='Private saves on this device';
-    } catch(e) { $('saveState').textContent='Lessons open · rounds saved on this device'; status('Cloud saves are unavailable. Speaking and writing rounds can still save on this device; clip uploads need a private connection.',true); }
+      $('uploadClip').disabled=false;$('uploadClip').textContent='Save private clip';$('clipConnection').textContent='Private uploads are ready.';
+    } catch(e) { $('saveState').textContent='Lessons open · rounds saved on this device';$('uploadClip').disabled=true;$('uploadClip').textContent='Private uploads offline';$('clipConnection').textContent='Private uploads are offline. Speaking and writing rounds still work on this device.';status('Cloud saves are unavailable. Speaking and writing rounds can still save on this device; clip uploads need a private connection.',true); }
   }
   async function touch() {
     if(!auth)return;
