@@ -13,20 +13,7 @@
 </head>
 <body>
   <div class="ember" aria-hidden="true"></div>
-  <main id="login" class="lock-screen">
-    <div class="lock-card">
-      <div class="brand"><span class="mark">✳</span> LAZER <b>LAB</b></div>
-      <span class="kicker">PRIVATE SIDE PROJECT</span>
-      <h1>Find the feel.<br><em>Keep your voice.</em></h1>
-      <p>Short speaking and texting lessons. Your clips, recordings and writing stay behind your site’s admin login.</p>
-      <label for="password">Admin access key</label>
-      <div class="login-row"><input id="password" type="password" autocomplete="current-password"><button id="signIn" class="primary">Enter ↗</button></div>
-      <p id="loginStatus" class="status" role="status">Your session stays in this tab’s memory. Sign in again after closing it.</p>
-      <a href="/">← Back to oski.website</a>
-    </div>
-  </main>
-
-  <div id="app" hidden>
+  <div id="app">
     <header class="header">
       <button id="home" class="brand" aria-label="Go to Speak"><span class="mark">✳</span> LAZER <b>LAB</b></button>
       <nav class="nav" aria-label="Main navigation">
@@ -35,7 +22,7 @@
         <button data-tab="clips"><span class="nav-icon">▣</span> Clips</button>
         <button data-tab="history"><span class="nav-icon">▤</span> History</button>
       </nav>
-      <button id="signOut" class="quiet">Sign out</button>
+      <span id="saveState" class="tiny" role="status">Connecting private saves…</span>
     </header>
     <div id="notice" class="notice" role="status" hidden></div>
 
@@ -72,9 +59,9 @@
     <section id="history" class="page" aria-labelledby="historyTitle">
       <div class="intro"><span class="kicker">YOUR PROGRESS</span><h1 id="historyTitle">What carried <em>over?</em></h1><p>Rounds and saved takes are practice evidence, not an accent score. A good sign is using a small habit in fresh words while feeling at ease.</p></div>
       <div id="historyList" class="card-list"></div>
-      <p class="footnote">Manage every saved entry and its audio from the real <a href="/admin">/admin panel ↗</a>. Deletion controls are in its LAZER LAB tab.</p>
+      <p class="footnote">Your saved material is private to this browser’s guest session and the site admin. If you clear this browser’s data, you may lose access to your saves. The admin can delete files and old inactive accounts’ material from the <a href="/admin">/admin panel ↗</a>.</p>
     </section>
-    <footer><span>Small changes. Your own voice.</span><span>Private to the admin account · <a href="/">Back to main site ↗</a></span></footer>
+    <footer><span>Small changes. Your own voice.</span><span>Open lessons · private personal saves · <a href="/">Back to main site ↗</a></span></footer>
   </div>
 </body>
 </html>
