@@ -2,7 +2,7 @@
   'use strict';
   const URL_BASE = 'https://otyoaqppxycpvpsclqvy.supabase.co';
   const KEY = 'sb_publishable_mxledKrN2vE7RmdsYQHNFA__wF3CLE4';
-  const EMAIL = 'operator@oski.website';
+  const SESSION_KEY = 'lazer_guest_session_v1';
   const BUCKET = 'lazer-private';
   const VIDEO = 'KPdcqHFnyT8';
   const $ = id => document.getElementById(id);
@@ -22,32 +22,45 @@
   const escape = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const date = value => new Date(value).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
   function status(message, error=false) { const el=$('notice'); el.textContent=message; el.hidden=false; el.classList.toggle('error',error); clearTimeout(status.timer); status.timer=setTimeout(()=>el.hidden=true,6500); }
+  function keepSession(data) {
+    const session=data.session||data;
+    auth={access_token:session.access_token,refresh_token:session.refresh_token,userId:session.user?.id||auth?.userId,expires:Date.now()+Number(session.expires_in||3600)*1000-60000};
+    localStorage.setItem(SESSION_KEY,JSON.stringify(auth));
+  }
+  async function renew() {
+    if (!auth?.refresh_token) throw Error('Private storage is unavailable. Reload to try again.');
+    const response=await fetch(URL_BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:auth.refresh_token})});
+    const data=await response.json().catch(()=>({}));
+    if (!response.ok||!data.access_token) {auth=null;localStorage.removeItem(SESSION_KEY);throw Error('Your private session ended. Reload to start a new one.');}
+    keepSession(data);
+  }
   async function call(path,options={}) {
-    if (!auth?.access_token) throw Error('Sign in again.');
-    if (Date.now()>auth.expires) { signOut(false); throw Error('Session expired. Sign in again.'); }
+    if (!auth?.access_token) throw Error('Private saving is not connected yet. You can still do the lessons.');
+    if (Date.now()>auth.expires) await renew();
     const response=await fetch(URL_BASE+path,{...options,headers:{apikey:KEY,Authorization:'Bearer '+auth.access_token,...options.headers}});
-    if (response.status===401 || response.status===403) { signOut(false); throw Error('Session ended or access denied.'); }
+    if (response.status===401) throw Error('Private session expired. Reload to reconnect.');
     if (!response.ok) { const detail=await response.json().catch(()=>({})); throw Error(detail.message||detail.error||`Request failed (${response.status}).`); }
     return response;
   }
-  async function signIn() {
-    const button=$('signIn'); button.disabled=true; $('loginStatus').textContent='Checking access…';
+  async function connect() {
+    render();
     try {
-      const response=await fetch(URL_BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email:EMAIL,password:$('password').value})});
-      const data=await response.json(); if (!response.ok || !data.access_token) throw Error('That key did not work.');
-      auth={access_token:data.access_token,userId:data.user.id,expires:Date.now()+Number(data.expires_in||3600)*1000-5000};
-      $('password').value='';
-      const probe=await call('/rest/v1/gang_admin_controls?select=key&key=eq.__admin_probe&limit=1');
-      if (!(await probe.json()).length) throw Error('This account does not have admin access.');
-      $('login').hidden=true; $('app').hidden=false; await refresh();
-    } catch (e) { await signOut(true); $('loginStatus').textContent=e.message||'Could not sign in.'; }
-    finally { button.disabled=false; }
+      const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+      if(saved?.refresh_token&&saved?.userId){auth=saved;await renew();}
+      else {
+        const response=await fetch(URL_BASE+'/auth/v1/signup',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({data:{},gotrue_meta_security:{}})});
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok||!(data.session?.access_token||data.access_token)) throw Error(data.msg||data.message||'Private saving is unavailable right now.');
+        keepSession(data);
+      }
+      await refresh();
+      await touch();
+      $('saveState').textContent='Private saves on this device';
+    } catch(e) { $('saveState').textContent='Lessons open · private saving unavailable'; status(e.message||'Private saving is unavailable.',true); }
   }
-  async function signOut(revoke=true) {
-    const token=auth?.access_token; auth=null; stopRecorder();
-    if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl=null; }
-    $('app').hidden=true; $('login').hidden=false; entries=[];
-    if (revoke && token) await fetch(URL_BASE+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'}).catch(()=>{});
+  async function touch() {
+    if(!auth)return;
+    await call('/rest/v1/lazer_activity?on_conflict=owner',{method:'POST',headers:{'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({owner:auth.userId,last_active_at:new Date().toISOString()})}).catch(()=>{});
   }
   async function refresh() {
     const response=await call('/rest/v1/lazer_entries?select=id,kind,title,data,object_path,created_at&order=created_at.desc&limit=500');
@@ -60,6 +73,7 @@
   function showTab(next) {
     if (recorder?.state==='recording') { status('Stop your recording before leaving.',true); return; }
     tab=next;
+    touch();
     document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===next));
     document.querySelectorAll('[data-tab]').forEach(el=>{el.classList.toggle('active',el.dataset.tab===next);el.setAttribute('aria-current',el.dataset.tab===next?'page':'false');});
     if (next!=='speak') { const frame=$('ytFrame'); if(frame) frame.remove(); }
@@ -147,14 +161,15 @@
     $('historyList').innerHTML=list.length?list.map(e=>`<article class="saved-card"><span class="kicker">${escape(e.kind.replace('_',' '))} · ${date(e.created_at)}</span><h3>${escape(e.title)}</h3><p>${escape(e.data.body||e.data.note||e.data.prompt||'Saved practice')}</p>${e.object_path?`<button class="secondary" data-play="${e.id}">▶ Hear take</button><div id="media-${e.id}"></div>`:''}</article>`).join(''):'<div class="empty">No rounds yet. Finish a speaking or texting level to see it here.</div>';
   }
   document.addEventListener('click',event=>{
-    const target=event.target.closest('[data-tab],[data-speech],[data-writing],[data-practice],[data-play]');if(!target||!auth)return;
+    const target=event.target.closest('[data-tab],[data-speech],[data-writing],[data-practice],[data-play]');if(!target)return;
     if(target.dataset.tab) showTab(target.dataset.tab);
     if(target.dataset.speech){savedTake=false;currentSpeech=speech.find(s=>s.id===target.dataset.speech);renderSpeech();}
     if(target.dataset.writing){currentText=target.dataset.writing;renderText();}
     if(target.dataset.practice){const e=entries.find(x=>x.id===target.dataset.practice);if(e){savedTake=false;currentSpeech={id:e.id,title:e.title,custom:true,objectPath:e.object_path,mime:e.data.mime,hear:'Listen twice, then choose one detail you can hear.',try:'Try that detail in your own voice.',prompt:'Use that detail in a fresh sentence of your own.',guard:'Do not assume it is a general accent feature.'};showTab('speak');renderSpeech();}}
     if(target.dataset.play){const e=entries.find(x=>x.id===target.dataset.play);if(e)playPrivate(e.object_path,$('media-'+e.id),e.data.mime);}
   });
-  $('signIn').onclick=signIn;$('password').onkeydown=e=>{if(e.key==='Enter')signIn();};$('signOut').onclick=()=>signOut();$('home').onclick=()=>showTab('speak');
+  $('home').onclick=()=>showTab('speak');
   $('uploadClip').onclick=async()=>{const file=$('clipFile').files[0],title=$('clipTitle').value.trim();if(!file||!title){status('Choose a file and give it a name.',true);return;}const button=$('uploadClip');button.disabled=true;try{await upload(file,'speech_reference',title,{note:$('clipNote').value.trim()});$('clipFile').value='';$('clipTitle').value='';$('clipNote').value='';status('Private clip saved.');}catch(e){status(e.message,true);}finally{button.disabled=false;}};
   $('saveTextSource').onclick=async()=>{const label=$('textSource').value.trim(),body=$('textExample').value.trim(),url=$('textUrl').value.trim();if(!label||body.length<2||url&&!/^https:\/\//i.test(url)){status('Add a label and excerpt. Links must start with https://.',true);return;}try{await saveEntry('text_reference',label,{body,url});$('textSource').value='';$('textExample').value='';$('textUrl').value='';status('Example saved privately.');}catch(e){status(e.message,true);}};
+  connect();
 })();
