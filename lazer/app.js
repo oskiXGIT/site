@@ -7,7 +7,7 @@
   const VIDEO = 'KPdcqHFnyT8';
   const $ = id => document.getElementById(id);
   const speech = [
-    {id:'short-answer',title:'Say less',time:'0:29–0:31',start:29,end:31,hear:'Where does his answer land? Hear the small words around it.',try:'Keep your normal pitch. Borrow only the timing.',prompt:'A friend asks if you expected the result. Answer briefly in your own words.',guard:'Short does not mean flat. Do not force a low voice.'},
+    {id:'short-answer',title:'Say less',time:'0:29–0:30',start:29,end:30,hear:'Where does his answer land? Hear the small words around it.',try:'Keep your normal pitch. Borrow only the timing.',prompt:'A friend asks if you expected the result. Answer briefly in your own words.',guard:'Short does not mean flat. Do not force a low voice.'},
     {id:'connected',title:'Let it run',time:'6:47–6:53',start:407,end:413,hear:'Which words stay clear? Which little words move between them?',try:'Carry a thought in one easy motion.',prompt:'Tell someone what you are doing after this.',guard:'Connected speech is coordination, not random slurring.'},
     {id:'phrase',title:'Land the thought',time:'10:47–10:53',start:647,end:653,hear:'Notice where the thought keeps moving and where it lands.',try:'Follow the broad phrase shape in your own voice.',prompt:'Explain why something looked easier before you tried it.',guard:'Do not race to match a duration.'},
     {id:'flow',title:'Keep the floor',time:'11:23–11:38',start:683,end:698,hear:'Listen for how his turn stays alive without stressing every word.',try:'Keep an easy pace while answering for meaning.',prompt:'Talk for 15 seconds about a song you liked more after a second listen.',guard:'This one moment is no universal accent rule.'}
