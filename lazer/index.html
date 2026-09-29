@@ -8,8 +8,8 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src https://otyoaqppxycpvpsclqvy.supabase.co; img-src 'self' data:; media-src 'self' blob: https://otyoaqppxycpvpsclqvy.supabase.co; frame-src https://www.youtube.com https://www.youtube-nocookie.com; form-action 'none'; base-uri 'none'; object-src 'none'">
   <meta name="theme-color" content="#100a09">
   <title>LAZER LAB · Your voice, your words</title>
-  <link rel="stylesheet" href="./style.css?v=guest-2">
-  <script src="./app.js?v=guest-2" defer></script>
+  <link rel="stylesheet" href="./style.css?v=guest-3">
+  <script src="./app.js?v=guest-3" defer></script>
 </head>
 <body>
   <div class="ember" aria-hidden="true"></div>
@@ -52,7 +52,7 @@
 
     <section id="clips" class="page" aria-labelledby="clipsTitle">
       <div class="intro"><span class="kicker">YOUR PRIVATE REFERENCES</span><h1 id="clipsTitle">Bring a moment <em>you trust.</em></h1><p>Use one speaker and a short conversational clip. You can practice from it without recording yourself.</p></div>
-      <div class="upload lesson"><label for="clipFile">Audio or video · max 30 MB</label><input id="clipFile" type="file" accept="audio/*,video/mp4,video/webm,video/quicktime"><label for="clipTitle">Name this moment</label><input id="clipTitle" maxlength="160" placeholder="Interview · short answer"><label for="clipNote">What do you hear? (optional)</label><textarea id="clipNote" maxlength="500" rows="3" placeholder="One detail, your own words. If unsure, say so."></textarea><button id="uploadClip" class="primary">Save private clip</button><p class="footnote">Only submit clips you are allowed to use. Files are stored in a private Supabase bucket; the original is never published to the public site.</p></div>
+      <div class="upload lesson"><label for="clipFile">Audio or video · max 30 MB</label><input id="clipFile" type="file" accept="audio/*,video/mp4,video/webm,video/quicktime"><label for="clipTitle">Name this moment</label><input id="clipTitle" maxlength="160" placeholder="Interview · short answer"><label for="clipNote">What do you hear? (optional)</label><textarea id="clipNote" maxlength="500" rows="3" placeholder="One detail, your own words. If unsure, say so."></textarea><button id="uploadClip" class="primary" disabled>Connecting private uploads…</button><p id="clipConnection" class="footnote">Connecting private storage…</p><p class="footnote">Only submit clips you are allowed to use. Files are stored in a private Supabase bucket; the original is never published to the public site.</p></div>
       <div id="clipList" class="card-list"></div>
     </section>
 
