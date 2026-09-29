@@ -154,7 +154,7 @@
     dashboardView.hidden = false;
     if (sessionUid) sessionUid.textContent = session?.user?.id ? `${session.user.id.slice(0, 8)}…` : '-';
     setGlobalStatus('AUTH OK / ADMIN OK / MEMORY ONLY');
-    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts(), loadArchives(), loadPhotos(), loadPollAdmin()]);
+    await Promise.allSettled([loadComplaints(), loadNotes(), loadControls(), loadPosts(), loadArchives(), loadPhotos(), loadPollAdmin(), loadLazer()]);
   }
 
   async function handleLogin() {
@@ -1343,6 +1343,80 @@
     }
   }
 
+
+  // Separate private practice app. The same verified admin session can remove its rows and files.
+  let lazerRows = [];
+  async function loadLazer() {
+    if (!session || !$('lazerList')) return;
+    const response = await api('/rest/v1/lazer_entries?select=id,kind,title,object_path,created_at&order=created_at.desc&limit=1000');
+    if (!response.ok) { $('lazerState').textContent = 'IRASU PERSKAITYTI NEPAVYKO (' + response.status + ')'; return; }
+    lazerRows = await response.json();
+    $('lazerCount').textContent = lazerRows.length + ' IRASU';
+    const list = $('lazerList');
+    list.replaceChildren();
+    if (!lazerRows.length) { const empty=document.createElement('div');empty.className='empty';empty.textContent='LAZER LAB TUSCIAS';list.append(empty);return; }
+    lazerRows.forEach(row => {
+      const card=document.createElement('div');card.className='note-row';
+      const text=document.createElement('span');
+      text.textContent = row.kind.replaceAll('_',' ').toUpperCase() + ' · ' + row.title + ' · ' + formatDate(row.created_at) + (row.object_path ? ' · FAILAS' : '');
+      card.append(text, button('TRINT', 'small-btn danger', () => deleteLazerRow(row)));
+      list.append(card);
+    });
+  }
+  async function removeLazerPaths(paths) {
+    for (let i=0;i<paths.length;i+=100) {
+      const response=await api('/storage/v1/object/lazer-private', {method:'DELETE',body:JSON.stringify({prefixes:paths.slice(i,i+100)})});
+      if (!response.ok) throw Error('FAILU TRYNIMAS NEPAVYKO ('+response.status+')');
+    }
+  }
+  async function deleteLazerRow(row) {
+    if (!window.confirm('Trinti '+row.title+' ir jo faila?')) return;
+    $('lazerState').textContent='TRINAMA...';
+    try {
+      if (row.object_path) await removeLazerPaths([row.object_path]);
+      const response=await api('/rest/v1/lazer_entries?id=eq.'+encodeURIComponent(row.id),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      if (!response.ok) throw Error('IRASO TRYNIMAS NEPAVYKO ('+response.status+')');
+      await loadLazer();$('lazerState').textContent='ISTRINTA';
+    } catch (error) { $('lazerState').textContent=error.message; }
+  }
+  async function allLazerPaths(prefix='') {
+    const paths=[];
+    for (let offset=0;;offset+=100) {
+      const response=await api('/storage/v1/object/list/lazer-private',{method:'POST',body:JSON.stringify({prefix,limit:100,offset})});
+      if (!response.ok) throw Error('FAILU SARASAS NEPASIEKIAMAS ('+response.status+')');
+      const objects=await response.json();
+      for (const object of objects) {
+        const path=prefix ? prefix+'/'+object.name : object.name;
+        if (object.id) paths.push(path);
+        else paths.push(...await allLazerPaths(path));
+      }
+      if (objects.length<100) break;
+    }
+    return paths;
+  }
+  async function wipeLazer() {
+    if ($('lazerConfirm').value!=='DELETE LAZER DATA') { $('lazerState').textContent='REIKIA IVESTI DELETE LAZER DATA';return; }
+    if (!window.confirm('Visam laikui pasalinti VISUS LAZER LAB failus ir irasus?')) return;
+    const wipe=$('wipeLazer');wipe.disabled=true;$('lazerState').textContent='IESKOMI PRIVATUS FAILAI...';
+    try {
+      const paths=await allLazerPaths();
+      $('lazerState').textContent='TRINAMI '+paths.length+' FAILAI...';
+      await removeLazerPaths(paths);
+      // Repeated batches handle more than the first REST page without a broad unverified delete.
+      for (;;) {
+        const response=await api('/rest/v1/lazer_entries?select=id&limit=500');
+        if (!response.ok) throw Error('IRASU SARASAS NEPASIEKIAMAS');
+        const rows=await response.json();if (!rows.length) break;
+        for (const row of rows) {
+          const deleted=await api('/rest/v1/lazer_entries?id=eq.'+encodeURIComponent(row.id),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+          if (!deleted.ok) throw Error('IRASO TRYNIMAS SUSTOJO ('+deleted.status+')');
+        }
+      }
+      $('lazerConfirm').value='';await loadLazer();$('lazerState').textContent='VISI LAZER LAB FAILAI IR IRASAI ISTRINTI';
+    } catch (error) { $('lazerState').textContent=error.message+' · LIKUTI PATIKRINK IR BANDYK DAR KARTA'; }
+    finally { wipe.disabled=false; }
+  }
+
   function setTab(name) {
     document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === name));
     document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.toggle('active', panel.id === `tab-${name}`));
@@ -1379,6 +1453,8 @@
   $('pollAddOption')?.addEventListener('click', addPollAdminOption);
   $('savePollBtn')?.addEventListener('click', () => savePollAdmin(false));
   $('resetPollBtn')?.addEventListener('click', () => savePollAdmin(true));
+  $('refreshLazer')?.addEventListener('click', loadLazer);
+  $('wipeLazer')?.addEventListener('click', wipeLazer);
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
 
   setInterval(() => {
@@ -1409,3 +1485,4 @@
   setLoginStatus('LAUKIAMA OPERATORIAUS. KIEKVIENAS NAUJAS IKELIMAS REIKALAUJA RAKTO.', '');
   adminPassword?.focus();
 })();
+
