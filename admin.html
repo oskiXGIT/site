@@ -294,6 +294,14 @@
         <p id="lazerCount" class="tiny">KRAUNAMA...</p>
         <div id="lazerList" class="card-list"><div class="empty">Kraunam...</div></div>
         <div class="warning-box" style="margin-top:24px">
+          <b>NEAKTYVIU NAUDOTOJU FAILAI</b>
+          <p>Aktyvumas skaiciuojamas nuo paskutinio apsilankymo LAZER LAB. Pasirink laikotarpi, patikrink kieki ir patvirtink trynima. Tai rankinis admin veiksmas.</p>
+          <label for="lazerIdleDays">Neaktyvus bent</label>
+          <select id="lazerIdleDays"><option value="30">30 dienu</option><option value="90" selected>90 dienu</option><option value="180">180 dienu</option></select>
+          <p id="lazerIdleCount" class="tiny">KRAUNAMA...</p>
+          <button id="deleteIdleLazer" class="main-btn danger" type="button">TRINTI NEAKTYVIU DUOMENIS</button>
+        </div>
+        <div class="warning-box" style="margin-top:24px">
           <b>ISTRINTI VISKA IS LAZER LAB</b>
           <p>Pasalina visus sio app irasus ir visus failus privaciame bucket. Pagrindinio puslapio duomenu neliecia.</p>
           <label for="lazerConfirm">Ivesk DELETE LAZER DATA</label>
@@ -325,4 +333,3 @@
   <script src="admin.js?v=20260929_01"></script>
 </body>
 </html>
-
