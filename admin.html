@@ -11,7 +11,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://otyoaqppxycpvpsclqvy.supabase.co; img-src 'self' data: https://otyoaqppxycpvpsclqvy.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; media-src 'none'; worker-src 'none'; manifest-src 'none'" />
   <meta name="theme-color" content="#05070c" />
   <title>vidinis mazgas</title>
-  <link rel="stylesheet" href="admin.css?v=20260919_0018" />
+  <link rel="stylesheet" href="admin.css?v=20260929_01" />
   <script src="cache-bust.js?v=20260918_2030"></script>
 </head>
 <body>
@@ -59,6 +59,7 @@
         <button class="tab" data-tab="archives">ARCHYVAI</button>
         <button class="tab" data-tab="photos">NUOTRAUKOS</button>
         <button class="tab" data-tab="poll">APKLAUSA</button>
+        <button class="tab" data-tab="lazer">LAZER LAB</button>
         <button class="tab" data-tab="session">SESIJA</button>
       </nav>
 
@@ -287,6 +288,21 @@
         </div>
       </section>
 
+      <section class="tab-panel" id="tab-lazer">
+        <div class="panel-title"><b>LAZER LAB / PRIVATE DATA</b><button id="refreshLazer" class="small-btn">ATNAUJINT</button></div>
+        <p class="dim">Cia yra atskiros /lazer/ programos irasai. Audio/video failai laikomi privaciame Supabase bucket. Viesam puslapyje ju nera.</p>
+        <p id="lazerCount" class="tiny">KRAUNAMA...</p>
+        <div id="lazerList" class="card-list"><div class="empty">Kraunam...</div></div>
+        <div class="warning-box" style="margin-top:24px">
+          <b>ISTRINTI VISKA IS LAZER LAB</b>
+          <p>Pasalina visus sio app irasus ir visus failus privaciame bucket. Pagrindinio puslapio duomenu neliecia.</p>
+          <label for="lazerConfirm">Ivesk DELETE LAZER DATA</label>
+          <input id="lazerConfirm" autocomplete="off" placeholder="DELETE LAZER DATA" />
+          <button id="wipeLazer" class="main-btn danger" type="button">TRINT VISKA</button>
+        </div>
+        <div id="lazerState" class="tiny" role="status">LAUKIA ADMINO</div>
+      </section>
+
       <section class="tab-panel" id="tab-session">
         <div class="panel-title"><b>SESIJOS_DIAGNOSTIKA.txt</b></div>
         <div class="session-grid">
@@ -306,6 +322,7 @@
     </section>
   </main>
 
-  <script src="admin.js?v=20260919_0018"></script>
+  <script src="admin.js?v=20260929_01"></script>
 </body>
 </html>
+
