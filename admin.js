@@ -1346,11 +1346,30 @@
 
   // Separate private practice app. The same verified admin session can remove its rows and files.
   let lazerRows = [];
+  let lazerActivity = [];
+  function inactiveLazerOwners() {
+    const cutoff=Date.now()-Number($('lazerIdleDays').value)*86400000;
+    const latest=new Map(lazerActivity.map(row=>[row.owner,Date.parse(row.last_active_at)]));
+    const owners=new Set();
+    for(const row of lazerRows) {
+      const time=Math.max(latest.get(row.owner)||0,Date.parse(row.created_at)||0);
+      latest.set(row.owner,time);owners.add(row.owner);
+    }
+    return [...owners].filter(owner=>(latest.get(owner)||0)<cutoff);
+  }
+  function showIdleLazerCount() {
+    const owners=inactiveLazerOwners();
+    const rows=lazerRows.filter(row=>owners.includes(row.owner));
+    $('lazerIdleCount').textContent=`${owners.length} naudotojai · ${rows.length} irasai · ${rows.filter(row=>row.object_path).length} susieti failai`;
+  }
   async function loadLazer() {
     if (!session || !$('lazerList')) return;
-    const response = await api('/rest/v1/lazer_entries?select=id,kind,title,object_path,created_at&order=created_at.desc&limit=1000');
-    if (!response.ok) { $('lazerState').textContent = 'IRASU PERSKAITYTI NEPAVYKO (' + response.status + ')'; return; }
-    lazerRows = await response.json();
+    const [response,activityResponse] = await Promise.all([
+      api('/rest/v1/lazer_entries?select=id,owner,kind,title,object_path,created_at&order=created_at.desc&limit=1000'),
+      api('/rest/v1/lazer_activity?select=owner,last_active_at&limit=1000')
+    ]);
+    if (!response.ok || !activityResponse.ok) { $('lazerState').textContent = 'LAZER DUOMENU PERSKAITYTI NEPAVYKO'; return; }
+    lazerRows = await response.json();lazerActivity=await activityResponse.json();showIdleLazerCount();
     $('lazerCount').textContent = lazerRows.length + ' IRASU';
     const list = $('lazerList');
     list.replaceChildren();
@@ -1378,6 +1397,26 @@
       if (!response.ok) throw Error('IRASO TRYNIMAS NEPAVYKO ('+response.status+')');
       await loadLazer();$('lazerState').textContent='ISTRINTA';
     } catch (error) { $('lazerState').textContent=error.message; }
+  }
+  async function deleteIdleLazer() {
+    await loadLazer();
+    const owners=inactiveLazerOwners(), rows=lazerRows.filter(row=>owners.includes(row.owner));
+    if(!owners.length) { $('lazerState').textContent='NERA NEAKTYVIU DUOMENU';return; }
+    if(lazerRows.length===1000 || lazerActivity.length===1000) { $('lazerState').textContent='PUSLAPIO LIMITAS PASIEKTAS. TRYNIMAS SUSTABDYTAS, REIKIA PILNO SARASO.';return; }
+    if(!window.confirm(`Visam laikui istrinti ${rows.length} irasu ir visus ${owners.length} neaktyviu naudotoju failus?`)) return;
+    const action=$('deleteIdleLazer');action.disabled=true;$('lazerState').textContent='TRINAMI NEAKTYVIU FAILAI...';
+    try {
+      for(const owner of owners) {
+        const paths=await allLazerPaths(owner);
+        await removeLazerPaths(paths);
+        const deleted=await api('/rest/v1/lazer_entries?owner=eq.'+encodeURIComponent(owner),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+        if(!deleted.ok) throw Error('IRASU TRYNIMAS NEPAVYKO ('+deleted.status+')');
+        const activity=await api('/rest/v1/lazer_activity?owner=eq.'+encodeURIComponent(owner),{method:'DELETE',headers:{Prefer:'return=minimal'}});
+        if(!activity.ok) throw Error('AKTYVUMO TRYNIMAS NEPAVYKO ('+activity.status+')');
+      }
+      await loadLazer();$('lazerState').textContent='NEAKTYVIU FAILAI IR IRASAI ISTRINTI';
+    } catch(error) { $('lazerState').textContent=error.message+' · LIKUTI PATIKRINK IR BANDYK DAR KARTA'; }
+    finally { action.disabled=false; }
   }
   async function allLazerPaths(prefix='') {
     const paths=[];
@@ -1412,6 +1451,8 @@
           if (!deleted.ok) throw Error('IRASO TRYNIMAS SUSTOJO ('+deleted.status+')');
         }
       }
+      const activity=await api('/rest/v1/lazer_activity?owner=not.is.null',{method:'DELETE',headers:{Prefer:'return=minimal'}});
+      if(!activity.ok) throw Error('AKTYVUMO TRYNIMAS SUSTOJO ('+activity.status+')');
       $('lazerConfirm').value='';await loadLazer();$('lazerState').textContent='VISI LAZER LAB FAILAI IR IRASAI ISTRINTI';
     } catch (error) { $('lazerState').textContent=error.message+' · LIKUTI PATIKRINK IR BANDYK DAR KARTA'; }
     finally { wipe.disabled=false; }
@@ -1454,6 +1495,8 @@
   $('savePollBtn')?.addEventListener('click', () => savePollAdmin(false));
   $('resetPollBtn')?.addEventListener('click', () => savePollAdmin(true));
   $('refreshLazer')?.addEventListener('click', loadLazer);
+  $('lazerIdleDays')?.addEventListener('change', showIdleLazerCount);
+  $('deleteIdleLazer')?.addEventListener('click', deleteIdleLazer);
   $('wipeLazer')?.addEventListener('click', wipeLazer);
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => setTab(tab.dataset.tab)));
 
@@ -1485,4 +1528,3 @@
   setLoginStatus('LAUKIAMA OPERATORIAUS. KIEKVIENAS NAUJAS IKELIMAS REIKALAUJA RAKTO.', '');
   adminPassword?.focus();
 })();
-
