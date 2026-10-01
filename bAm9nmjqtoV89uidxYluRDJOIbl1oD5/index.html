@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Cache-Control" content="no-store,no-cache,must-revalidate">
+  <title>404</title>
+  <link rel="stylesheet" href="./vault.css">
+</head>
+<body class="locked">
+  <main id="gate" class="gate">
+    <div class="gate-label">404 / PRIVATE NODE</div>
+    <form id="login" autocomplete="off">
+      <input id="password" type="password" autocomplete="current-password" spellcheck="false" aria-label="Password">
+    </form>
+    <div id="gate-status" class="gate-status">PASSWORD REQUIRED</div>
+  </main>
+
+  <div id="app" class="app hidden">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Roblox Favorites</h1>
+          <div id="summary" class="summary">Loading…</div>
+        </div>
+        <button id="lock" type="button">Lock</button>
+      </div>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search name, creator, ID, description…">
+        <select id="category"><option value="">All categories</option></select>
+        <select id="kind">
+          <option value="">Catalog + Games</option>
+          <option value="Catalog">Catalog only</option>
+          <option value="Game">Games only</option>
+        </select>
+      </div>
+      <div id="status" class="status"></div>
+    </header>
+    <main class="content">
+      <div id="grid" class="grid"></div>
+      <div id="empty" class="empty hidden">Nothing matches.</div>
+    </main>
+  </div>
+
+  <script src="./vault.js"></script>
+</body>
+</html>
